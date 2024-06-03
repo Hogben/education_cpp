@@ -337,9 +337,53 @@ void DrawMatrix<T>::view()
     }
     cout << endl;
 }
+//----------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------
 
 struct SnakeBodyCell { int x; int y; char cell; };
 enum class SnakeMove { left, right, up, down };
+
+int         sleep_count = 250;     
+bool        game_run = false;
+SnakeMove   s_move = SnakeMove::right;
+
+void _snake_control()
+{
+    char t_char;
+    keyboard *kbd = new keyboard();
+    
+    while (game_run)
+    {
+        this_thread::sleep_for(5ms);
+        if (kbd->kbhit())
+        {
+            t_char = kbd->getch();
+            switch(t_char)
+            {
+                case 'w':
+                    s_move = SnakeMove::up;
+                    break;                
+                case 's':
+                    s_move = SnakeMove::down;
+                    break;                
+                case 'a':
+                    s_move = SnakeMove::left;
+                    break;                
+                case 'd':
+                    s_move = SnakeMove::right;
+                    break;                
+                case 'q':
+                    game_run = false;
+                    break;                
+            }
+        }
+    }
+    
+    delete kbd;
+}
+
+
 /*/
     Shake:
         @ - head
@@ -350,32 +394,75 @@ enum class SnakeMove { left, right, up, down };
 class Snake
 {
     public:
-        Snake(char head, int m_x, int m_y) : max_x(m_x), max_y(m_y)
-        {
-            body.push_back({0,0,head});    
-            body.push_back({0,0,'o'});    
-            body.push_back({0,0,'o'});    
-            _move = SnakeMove::right;
-        }
-        
-        void set_xy(int index, int x, int y) { body[index].x = x; body[index].y = y; }
-        bool move(bool);       
+        Snake(char head, int m_x, int m_y) : max_x(m_x), max_y(m_y), _head(head)    { init (); }
+        bool move(bool, SnakeBodyCell &, uint &);       
         
         vector<SnakeBodyCell> body;
         bool active = false;
         bool dead = false;
         SnakeMove _move;
+        char _head;
+        
+        void init()
+        {
+            body.clear();
+            body.push_back({max_x/2+1, max_y/2, _head});    
+            body.push_back({max_x/2, max_y/2, 'o'});    
+            body.push_back({max_x/2-1, max_y/2, 'o'});    
+            _move = SnakeMove::right;
+        }
 
+        bool    auto_move = false;
     private:
-        int max_x;
-        int max_y;
+        int     max_x;
+        int     max_y;
 };
 
-bool Snake::move(bool circle)
+bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score /*, Snake *enemy */)
 {
+    
+    int new_x = body[0].x, new_y = body[0].y;
+
+    if (_move == SnakeMove::left)   new_x--;
+    if (_move == SnakeMove::right)   new_x++;
+    if (_move == SnakeMove::up)   new_y--;
+    if (_move == SnakeMove::down)   new_y++;
+
+    if (prize.cell == '*' && new_x == prize.x && new_y == prize.y)
+    {
+        prize.cell = '.';
+        body.push_back({0,0,'o'});
+        score += 100;
+    }
+
+    for (int i = body.size()-1; i > 0; i--)
+    {
+        body[i].x = body[i-1].x;
+        body[i].y = body[i-1].y;
+    }   
+    
+    body[0].x = new_x;
+    body[0].y = new_y;
+    
+    if (circle)
+    {
+        if (body[0].x < 0)  body[0].x = max_x - 1;
+        if (body[0].x == max_x)  body[0].x = 0;
+        if (body[0].y < 0)  body[0].y = max_y - 1;
+        if (body[0].y == max_y)  body[0].y = 0;
+    }
+    else
+    {
+        if (body[0].x < 0 || body[0].x == max_x  || body[0].y < 0 || body[0].y == max_y) return false;
+    }
+    
+    for (int i = 1; i < body.size(); i++)
+    {
+        if (body[0].x == body[i].x && body[0].y == body[i].y) return false;
+    }
+    
     return true;
 }
-
 
 class SnakeField : public DrawMatrix<char>
 {
@@ -384,17 +471,11 @@ class SnakeField : public DrawMatrix<char>
         {
             score = 0;
             set_separate_row(false);
-            
             people = new Snake('@', x, y);
-            people->set_xy(0, x/2+1, y/2);
-            people->set_xy(1, x/2, y/2);
-            people->set_xy(2, x/2-1, y/2);
-            
             set_place(people);
-                
             people->active = true;
-            
             enemy = new Snake('#', x, y);
+            enemy->auto_move = true;
         }
 
         ~SnakeField() 
@@ -403,6 +484,8 @@ class SnakeField : public DrawMatrix<char>
             delete enemy;    
         }        
         
+        void prize_init();
+        
         Snake *people;
         Snake *enemy;
         
@@ -410,31 +493,68 @@ class SnakeField : public DrawMatrix<char>
         void start(bool = false);
         void current_view(bool);
         
-        bool game_run = false;
+        SnakeBodyCell prize;
         
         uint    score;        
 };   
+
+void SnakeField::prize_init()
+{
+    int x, y;
+    while (true)
+    {
+        x = randint(0, column -1);
+        y = randint(0, row -1);
+        
+        if (matrix[y][x] == '.') break;
+        
+    }    
+    prize.x = x;
+    prize.y = y;
+    prize.cell = '*';
+    matrix[y][x] == '*';
+}
 
 void SnakeField::start(bool circle)
 {
     score = 0;
     game_run = true;
+    people->init();
+    s_move = SnakeMove::right;
+    prize =  { 0, 0, '.' };
+    
+    thread th = thread(_snake_control);
+    
     current_view(circle);
+    
+    th.join();
 }
 
 void SnakeField::current_view(bool circle)
 {
     while (game_run)    
     {
-        this_thread::sleep_for(400ms);
-
-        if (people->active) set_place(people);
+        if (people->active) 
+        {
+            people->_move = s_move;
+            game_run = people->move(circle, prize, score);
+            set_place(people);
+        }
         if (enemy->active) set_place(enemy, false);
-        this->view();        
-        score += people->body.size();
-        cout << "Score: " << score << endl;
 
-        game_run = people->move(circle);
+        if (prize.cell == '*')
+            matrix[prize.y][prize.x] = '*';
+        else
+        {
+            if (randint(0, 100) < 10)
+            {
+               prize_init();
+            }
+        }
+        this->view();        
+        score += people->body.size()/5;
+        cout << "Score: " << score << endl;
+        this_thread::sleep_for(chrono::milliseconds(sleep_count));
     }
 }
 
@@ -449,17 +569,17 @@ int main()
     int     run = 1;
     bool    _c = false;
 
+    SnakeField *sf = new SnakeField(15, 10);
     while (run != 0)
     {
         _c = (run > 1) ? true : false;
-        SnakeField *sf = new SnakeField(15, 15);
         sf->start(_c);
         
         cout << "Input number for play again (0 - exit): ";
         cin >> run;
         
-        delete sf;
     }
+    delete sf;
 
     return 0;
 }
