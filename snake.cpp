@@ -400,7 +400,8 @@ class Snake
 {
     public:
         Snake(char head, int m_x, int m_y) : max_x(m_x), max_y(m_y), _head(head)    { init (); }
-        bool move(bool, SnakeBodyCell &, uint &);       
+        bool move(bool, SnakeBodyCell &, uint &, Snake *);       
+        bool check_snake(bool, int , int , SnakeBodyCell &, uint &);
         
         vector<SnakeBodyCell> body;
         bool active = false;
@@ -423,16 +424,8 @@ class Snake
         int     max_y;
 };
 
-bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score /*, Snake *enemy */)
+bool Snake::check_snake(bool circle, int new_x, int new_y, SnakeBodyCell &prize, uint &score)
 {
-    
-    int new_x = body[0].x, new_y = body[0].y;
-
-    if (_move == SnakeMove::left)   new_x--;
-    if (_move == SnakeMove::right)   new_x++;
-    if (_move == SnakeMove::up)   new_y--;
-    if (_move == SnakeMove::down)   new_y++;
-
     if (prize.cell == '*' && new_x == prize.x && new_y == prize.y)
     {
         prize.cell = '.';
@@ -465,7 +458,49 @@ bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score /*, Snake *enemy
     {
         if (body[0].x == body[i].x && body[0].y == body[i].y) return false;
     }
+    return true;
+}
+
+bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score , Snake *enemy)
+{
     
+    int new_x = body[0].x, new_y = body[0].y;
+
+    if (auto_move)
+    {
+        int rand_v = randint(0,1);
+        int rand_inc = randint(0,1);
+        while (true)
+        {
+            new_x = body[0].x, new_y = body[0].y;
+            if(rand_v) 
+            {
+                if (rand_inc)   new_y++;
+                else            new_y--;
+                    
+            }    
+            else
+            {
+                if (rand_inc)   new_x++;
+                else            new_x--;
+            }
+        }
+    }
+    else
+    {
+        if (_move == SnakeMove::left)   new_x--;
+        if (_move == SnakeMove::right)   new_x++;
+        if (_move == SnakeMove::up)   new_y--;
+        if (_move == SnakeMove::down)   new_y++;
+    }
+
+    if (check_snake(circle, new_x, new_y, prize, score))
+    {
+        for (int i = 0; i < enemy->body.size(); i++)
+        {
+            if (body[0].x == enemy->body[i].x && body[0].y == enemy->body[i].y) return false;
+        }
+    }
     return true;
 }
 
@@ -542,26 +577,25 @@ void SnakeField::current_view(bool circle)
         if (people->active) 
         {
             people->_move = s_move;
-            game_run = people->move(circle, prize, score);
+            game_run = people->move(circle, prize, score, enemy);
         }
         if (game_run)    
-            set_place(people);
-        
-        if (enemy->active) set_place(enemy, false);
-
-        if (prize.cell == '*')
-            matrix[prize.y][prize.x] = '*';
-        else
         {
-            if (randint(0, 100) < 10)
+            set_place(people);
+            
+            if (enemy->active) set_place(enemy, false);
+
+            if (prize.cell == '*')
+                matrix[prize.y][prize.x] = '*';
+            else
             {
-               prize_init();
+                if (randint(0, 100) < 10)   prize_init();
             }
+            this->view();        
+            score += people->body.size()/5;
+            cout << "Score: " << score << endl;
+            this_thread::sleep_for(chrono::milliseconds(sleep_count));
         }
-        this->view();        
-        score += people->body.size()/5;
-        cout << "Score: " << score << endl;
-        this_thread::sleep_for(chrono::milliseconds(sleep_count));
     }
 }
 
@@ -584,6 +618,7 @@ int main()
         
         cout << "Input number for play again (0 - exit): ";
         cin >> run;
+        
         
     }
     delete sf;
