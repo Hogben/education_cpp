@@ -344,7 +344,7 @@ void DrawMatrix<T>::view()
 struct SnakeBodyCell { int x; int y; char cell; };
 enum class SnakeMove { left, right, up, down };
 
-int         sleep_count = 250;     
+int         sleep_count = 300;     
 bool        game_run = false;
 SnakeMove   s_move = SnakeMove::right;
 
@@ -361,6 +361,12 @@ void _snake_control()
             t_char = kbd->getch();
             switch(t_char)
             {
+                case '+':   //------- speed++ 
+                    sleep_count -= 25;
+                    break;                
+                case '-':   //------- speed--
+                    sleep_count += 25;
+                    break;                
                 case 'w':
                     s_move = SnakeMove::up;
                     break;                
@@ -382,7 +388,6 @@ void _snake_control()
     
     delete kbd;
 }
-
 
 /*/
     Shake:
@@ -538,8 +543,10 @@ void SnakeField::current_view(bool circle)
         {
             people->_move = s_move;
             game_run = people->move(circle, prize, score);
-            set_place(people);
         }
+        if (game_run)    
+            set_place(people);
+        
         if (enemy->active) set_place(enemy, false);
 
         if (prize.cell == '*')
