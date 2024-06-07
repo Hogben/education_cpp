@@ -344,7 +344,7 @@ void DrawMatrix<T>::view()
 struct SnakeBodyCell { int x; int y; char cell; };
 enum class SnakeMove { left, right, up, down };
 
-int         sleep_count = 300;     
+int         sleep_count = 400;     
 bool        game_run = false;
 SnakeMove   s_move = SnakeMove::right;
 
@@ -355,9 +355,9 @@ void _snake_control()
     
     while (game_run)
     {
-        this_thread::sleep_for(5ms);
         if (kbd->kbhit())
         {
+            this_thread::sleep_for(5ms);
             t_char = kbd->getch();
             switch(t_char)
             {
@@ -460,13 +460,16 @@ bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score , Snake *enemy)
 
     if (auto_move)
     {
+        //------- check infinity and move to prize --- 
         vector<SnakeBodyCell> t_snake = body;
-        int rand_v = randint(0,1);
-        int rand_inc = randint(0,1);
+        int rand_v;
+        int rand_inc;
         while (true)
         {
             body = t_snake;
             new_x = body[0].x, new_y = body[0].y;
+            rand_v = randint(0,1);
+            rand_inc = randint(0,1);
             if(rand_v) 
             {
                 if (rand_inc)   new_y++;
@@ -494,11 +497,15 @@ bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score , Snake *enemy)
         if (_move == SnakeMove::right)   new_x++;
         if (_move == SnakeMove::up)   new_y--;
         if (_move == SnakeMove::down)   new_y++;
+        
         if (check_snake(circle, new_x, new_y, prize))
         {
-            for (int i = 0; i < enemy->body.size(); i++)
+            if (enemy->active)
             {
-                if (body[0].x == enemy->body[i].x && body[0].y == enemy->body[i].y) return false;
+                for (int i = 0; i < enemy->body.size(); i++)
+                {
+                    if (body[0].x == enemy->body[i].x && body[0].y == enemy->body[i].y) return false;
+                }
             }
         }
         else
@@ -646,7 +653,8 @@ void SnakeField::current_view(bool circle)
             step = 0;
             if (!enemy->active)
             {
-                if (randint(0, 1) == 1) enemy_init();
+                if (randint(0, 1) == 1) 
+                    enemy_init();
             }
         }
         if (people->active) 
@@ -655,8 +663,8 @@ void SnakeField::current_view(bool circle)
             game_run = people->move(circle, prize, score, enemy);
         }
         
-        if (enemy->active) enemy->move(circle, prize, score, enemy);
-        
+        if (enemy->active) enemy->move(circle, prize, score, people);
+
         if (game_run)    
         {
             set_place(people);
