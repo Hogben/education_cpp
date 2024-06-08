@@ -83,9 +83,9 @@ using namespace std;
 static const bool USE_LOG = false;
 int randint(int min_value, int max_value)
 {
-    return chrono::system_clock::now().time_since_epoch().count() % (max_value - min_value + 1);
+    int rez = chrono::system_clock::now().time_since_epoch().count() % (max_value - min_value + 1);
+    return rez + min_value;
 }
-
 
 class Logger
 {
