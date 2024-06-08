@@ -355,9 +355,9 @@ void _snake_control()
     
     while (game_run)
     {
+        this_thread::sleep_for(5ms);
         if (kbd->kbhit())
         {
-            this_thread::sleep_for(5ms);
             t_char = kbd->getch();
             switch(t_char)
             {
@@ -424,6 +424,7 @@ class Snake
         int     max_y;
 };
 
+
 bool Snake::check_snake(bool circle, int new_x, int new_y, SnakeBodyCell &prize)
 {
     for (int i = body.size()-1; i > 0; i--)
@@ -461,25 +462,62 @@ bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score , Snake *enemy)
     if (auto_move)
     {
         //------- check infinity and move to prize --- 
-        vector<SnakeBodyCell> t_snake = body;
+        vector<SnakeBodyCell> t_snake = body;      
         int rand_v;
         int rand_inc;
+        bool move_to_prize = false;
+
         while (true)
         {
             body = t_snake;
-            new_x = body[0].x, new_y = body[0].y;
+            new_x = body[0].x;
+            new_y = body[0].y;
             rand_v = randint(0,1);
             rand_inc = randint(0,1);
-            if(rand_v) 
+            move_to_prize = false;
+            
+            if (prize.cell == '*')
             {
-                if (rand_inc)   new_y++;
-                else            new_y--;
-                    
-            }    
-            else
+                move_to_prize = true;
+                if (body[0].y == prize.y)
+                {
+                    if (body[0].x > prize.x) 
+                        new_x--;
+                    else
+                        new_x++;
+                }
+                else
+                {
+                    if (body[0].y > prize.y) 
+                        new_y--;
+                    else
+                        new_y++;
+                }
+
+                for (int i = 1; i < body.size(); i++)
+                {
+                    if (new_x == body[i].x && new_y == body[i].y) 
+                    {
+                        new_x = body[0].x;
+                        new_y = body[0].y;
+                        move_to_prize = false;
+                        break;    
+                    }
+                }
+            }
+            if (!move_to_prize)
             {
-                if (rand_inc)   new_x++;
-                else            new_x--;
+                if(rand_v) 
+                {
+                    if (rand_inc)   new_y++;
+                    else            new_y--;
+                        
+                }    
+                else
+                {
+                    if (rand_inc)   new_x++;
+                    else            new_x--;
+                }
             }
             if (check_snake(circle, new_x, new_y, prize))
             {
@@ -515,7 +553,7 @@ bool Snake::move(bool circle, SnakeBodyCell &prize, uint &score , Snake *enemy)
     if (prize.cell == '*' && new_x == prize.x && new_y == prize.y)
     {
         prize.cell = '.';
-        body.push_back({0,0,'o'});
+        body.push_back({body[body.size()-1].x,body[body.size()-1].y,'o'});
         if (auto_move)
         {
             if (score > 200)
@@ -559,11 +597,116 @@ class SnakeField : public DrawMatrix<char>
         void start(bool = false);
         void current_view(bool);
         void enemy_init();
-        
+        bool check_inf(int x, int y, bool circle);
+       
         SnakeBodyCell prize;
         
         uint    score;        
 };   
+
+bool SnakeField::check_inf(int x, int y, bool circle)
+{
+    if (x > 0 && x < column - 1 && y > 0 && y < row - 1)
+    {
+        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+    }
+    else //---- check border
+    {
+        if (circle)
+        {
+            if (y == 0)
+            {
+                if (x == 0)
+                {
+                    if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
+                    if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                    if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                    if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
+                }
+                else
+                {
+                    if (x == column -1)
+                    {
+                        if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
+                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                        if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
+                        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                    }
+                    else
+                    {
+                        if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
+                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                    }
+                }
+            }
+            else
+            {
+                if (y == row -1)
+                {
+                    if (x == 0)
+                    {
+                        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                        if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
+                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                        if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
+                    }
+                    else
+                    {
+                        if (x == column -1)
+                        {
+                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                            if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
+                            if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
+                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                        }
+                        else
+                        {
+                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                            if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
+                            if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                        }
+                    }
+                }
+                else
+                {
+                    if (x == 0)
+                    {
+                        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                        if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
+                    }
+                    else
+                    {
+                        if (x == column -1)
+                        {
+                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                            if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                            if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
+                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                        }
+                        /*
+                        else
+                        {
+                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
+                            if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
+                            if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
+                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
+                        }
+                        */
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
 
 void SnakeField::enemy_init()
 {
@@ -646,6 +789,7 @@ void SnakeField::start(bool circle)
 void SnakeField::current_view(bool circle)
 {
     int step = 0;
+    enemy->active = false;
     while (game_run)    
     {
         if (step == 15)
@@ -653,8 +797,7 @@ void SnakeField::current_view(bool circle)
             step = 0;
             if (!enemy->active)
             {
-                if (randint(0, 1) == 1) 
-                    enemy_init();
+                if (randint(0, 1) == 1) enemy_init();
             }
         }
         if (people->active) 
@@ -663,7 +806,13 @@ void SnakeField::current_view(bool circle)
             game_run = people->move(circle, prize, score, enemy);
         }
         
-        if (enemy->active) enemy->move(circle, prize, score, people);
+        if (enemy->active) 
+        {
+            if (check_inf(enemy->body[0].x, enemy->body[0].y, circle))
+                enemy->move(circle, prize, score, people);
+            else
+                enemy->active = false;
+        }
 
         if (game_run)    
         {
