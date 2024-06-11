@@ -604,106 +604,57 @@ class SnakeField : public DrawMatrix<char>
         uint    score;        
 };   
 
-bool SnakeField::check_inf(int x, int y, bool circle)
+struct Point { int x; int y; };
+
+bool SnakeField::check_inf(int x, int y, bool circle)  
 {
-    if (x > 0 && x < column - 1 && y > 0 && y < row - 1)
+    vector<Point> v;
+
+    v.push_back({x + 1, y});
+    v.push_back({x - 1, y});
+    v.push_back({x, y - 1});
+    v.push_back({x, y + 1});
+
+    if (circle)
     {
-        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-    }
-    else //---- check border
-    {
-        if (circle)
+        for (auto &x : v)
         {
-            if (y == 0)
-            {
-                if (x == 0)
-                {
-                    if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
-                    if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                    if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                    if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
-                }
-                else
-                {
-                    if (x == column -1)
-                    {
-                        if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
-                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                        if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
-                        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                    }
-                    else
-                    {
-                        if (matrix[row-1][x] == '.' || matrix[row-1][x] == '*') return true;
-                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                        if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                    }
-                }
-            }
-            else
-            {
-                if (y == row -1)
-                {
-                    if (x == 0)
-                    {
-                        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                        if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
-                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                        if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
-                    }
-                    else
-                    {
-                        if (x == column -1)
-                        {
-                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                            if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
-                            if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
-                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                        }
-                        else
-                        {
-                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                            if (matrix[0][x] == '.' || matrix[0][x] == '*') return true;
-                            if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                        }
-                    }
-                }
-                else
-                {
-                    if (x == 0)
-                    {
-                        if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                        if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                        if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                        if (matrix[y][column-1] == '.' || matrix[y][column-1] == '*') return true;
-                    }
-                    else
-                    {
-                        if (x == column -1)
-                        {
-                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                            if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                            if (matrix[y][0] == '.' || matrix[y][0] == '*') return true;
-                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                        }
-                        /*
-                        else
-                        {
-                            if (matrix[y-1][x] == '.' || matrix[y-1][x] == '*') return true;
-                            if (matrix[y+1][x] == '.' || matrix[y+1][x] == '*') return true;
-                            if (matrix[y][x+1] == '.' || matrix[y][x+1] == '*') return true;
-                            if (matrix[y][x-1] == '.' || matrix[y][x-1] == '*') return true;
-                        }
-                        */
-                    }
-                }
-            }
+            if (x.x < 0)        x.x = column - 1;
+            if (x.x == column)  x.x = 0;
+            if (x.y < 0)        x.y = row - 1;
+            if (x.y == row)     x.y = 0;
         }
+    }
+    else
+    {
+        bool find = true;
+        while (find)
+        {
+            int i = 0;
+            for (; i < v.size(); i++)
+            {
+                if (v[i].x < 0 || v[i].x == column || v[i].y < 0 || v[i].y == row)
+                {
+                    v.erase(v.begin()+i);
+                    break;
+                }
+            }
+            if (i == v.size())  find = false;
+        }
+/*/
+        v.erase(
+            remove_if(
+                v.begin(),
+                v.end(),
+                [](auto i){ return i.x < 0 || i.x == column || i.y < 0 || i.y == row;} ),
+            v.end()
+        );
+/*/
+    }
+
+    for (auto x : v)
+    {
+        if (matrix[x.y][x.x] == '.' || matrix[x.y][x.x] == '*') return true;
     }
     return false;
 }
