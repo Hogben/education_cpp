@@ -627,29 +627,13 @@ bool SnakeField::check_inf(int x, int y, bool circle)
     }
     else
     {
-        bool find = true;
-        while (find)
-        {
-            int i = 0;
-            for (; i < v.size(); i++)
-            {
-                if (v[i].x < 0 || v[i].x == column || v[i].y < 0 || v[i].y == row)
-                {
-                    v.erase(v.begin()+i);
-                    break;
-                }
-            }
-            if (i == v.size())  find = false;
-        }
-/*/
         v.erase(
             remove_if(
                 v.begin(),
                 v.end(),
-                [](auto i){ return i.x < 0 || i.x == column || i.y < 0 || i.y == row;} ),
+                [this](auto i){ return i.x < 0 || i.x == column || i.y < 0 || i.y == row;} ),
             v.end()
         );
-/*/
     }
 
     for (auto x : v)
