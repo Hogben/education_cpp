@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <vector>
 #include <thread>
 #include <chrono>
@@ -36,30 +37,24 @@ void check_triple()
     answer++;
 }
 
-
 int main ()
 {
+    auto sum { [] (auto a, auto b) { return a + b; }};
 
+    auto to_string { [] (auto x) { stringstream s; s << x; return s.str(); } };
+    auto print_string { [] (string x )  { cout << x << endl; } };
+    
     int size = randint(10, 20);
 
     for (int i = 0; i < size; i++)  arr_source.push_back(randint(10, 99));
 
-    thread t = thread(check_odd);
-    thread f = thread(check_triple);
-    while (answer < 2) ;
-    t.join();
-    f.join();
-    cout << "source:";
+    cout << "triple:";
     for (int i : arr_source) cout << " " << i;
     cout << endl;
-    cout << "even:  ";
-    for (int i : arr_even) cout << " " << i;
-    cout << endl;
-    cout << "odd:   ";
-    for (int i : arr_odd) cout << " " << i;
-    cout << endl;
-    cout << "triple:";
-    for (int i : arr_triple) cout << " " << i;
-    cout << endl;
+
+    cout << sum(arr_source[0], arr_source[1]) << endl;
+
+    print_string(to_string(2.45));
+
     return 0;
 }

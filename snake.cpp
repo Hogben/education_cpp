@@ -635,13 +635,7 @@ bool SnakeField::check_inf(int x, int y, bool circle)
             v.end()
         );
     }
-
-    for (auto x : v)
-    {
-        if (matrix[x.y][x.x] == '.' || matrix[x.y][x.x] == '*') return true;
-    }
-    return false;
-}
+stoi(t_str.substr(pos + 4, t_str.length() - (pos + 4)));
 
 void SnakeField::enemy_init()
 {
@@ -775,10 +769,19 @@ void SnakeField::set_place(Snake *snake, bool empty)
     for (SnakeBodyCell c : snake->body) matrix[c.y][c.x] = c.cell;
 } 
 
+struct _record { string name; uint score; };
+
 int main()
 {
     int     run = 1;
     bool    _c = false;
+    fstream s_file;
+    vector<_record> v_top;
+    string t_str;
+    _record t_rec;
+
+    uint score_min = 0;
+    size_t pos;
 
     SnakeField *sf = new SnakeField(15, 10);
     while (run != 0)
@@ -789,9 +792,41 @@ int main()
         cout << "Input number for play again (0 - exit): ";
         cin >> run;
         
+        score_min = 0;
         
-    }
-    delete sf;
+        s_file.open("snake.top");
 
-    return 0;
+        while (true)
+        {
+            getline(s_file, t_str);
+            if (t_str.length() == 0)    break;
+            pos = t_str.find(" => ");
+            if (pos == std::string::npos) break;
+
+            t_rec.name = t_str.substr(0, pos - 1);
+            t_rec.score = stoi(t_str.substr(pos + 4, t_str.length() - (pos + 4)));
+
+            if ((score_min == 0) || t_rec.score < score_min)
+                score_min = t_rec.score;
+
+            v_top.push_back(t_rec);
+        }
+
+        if (sf->score > score_min)
+        {
+            //-------- put me in top (find, replace, write)
+        }
+
+        //------- name => score   
+        for (auto s : v_top)
+        {
+            cout << s.name << " => " << s.score << endl;
+        }
+    }
+
+    // read  and write score
+
+   delete sf;
+
+   return 0;
 }
