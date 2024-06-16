@@ -635,7 +635,13 @@ bool SnakeField::check_inf(int x, int y, bool circle)
             v.end()
         );
     }
-stoi(t_str.substr(pos + 4, t_str.length() - (pos + 4)));
+    
+    for (auto x : v)
+    {
+        if (matrix[x.y][x.x] == '.' || matrix[x.y][x.x] == '*') return true;
+    }
+    return false;
+}
 
 void SnakeField::enemy_init()
 {
@@ -682,7 +688,6 @@ void SnakeField::enemy_init()
     }
 }
 
-
 void SnakeField::prize_init()
 {
     int x, y;
@@ -692,7 +697,6 @@ void SnakeField::prize_init()
         y = randint(0, row -1);
         
         if (matrix[y][x] == '.') break;
-        
     }    
     prize.x = x;
     prize.y = y;
@@ -771,8 +775,20 @@ void SnakeField::set_place(Snake *snake, bool empty)
 
 struct _record { string name; uint score; };
 
+string codeString(string arg, char key)
+{
+    std::stringstream t_str;
+    for (int i = 0; i < arg.size(); i++)
+    {
+        char c = arg[i] ^ key;
+        t_str << c;
+    }
+    return t_str.str();
+}
+
 int main()
 {
+    int     MAX_RECORD = 3;
     int     run = 1;
     bool    _c = false;
     fstream s_file;
@@ -789,21 +805,24 @@ int main()
         _c = (run > 1) ? true : false;
         sf->start(_c);
         
-        cout << "Input number for play again (0 - exit): ";
-        cin >> run;
-        
+      
         score_min = 0;
+
+        v_top.clear();
         
-        s_file.open("snake.top");
+        s_file.open("snake.top", ios::in);
 
         while (true)
         {
             getline(s_file, t_str);
+
+            t_str = codeString(t_str, 11);
+
             if (t_str.length() == 0)    break;
             pos = t_str.find(" => ");
             if (pos == std::string::npos) break;
 
-            t_rec.name = t_str.substr(0, pos - 1);
+            t_rec.name = t_str.substr(0, pos);
             t_rec.score = stoi(t_str.substr(pos + 4, t_str.length() - (pos + 4)));
 
             if ((score_min == 0) || t_rec.score < score_min)
@@ -812,21 +831,49 @@ int main()
             v_top.push_back(t_rec);
         }
 
-        if (sf->score > score_min)
+        s_file.close();
+
+        if ((sf->score > score_min || v_top.size() < MAX_RECORD) && sf->score > 0)
         {
-            //-------- put me in top (find, replace, write)
+            string s_name = "";
+            cout << "Input your name: ";
+            cin >> s_name;
+            //-------- put me in top (find, replace,)
+            if (v_top.size() < MAX_RECORD)
+            {
+                v_top.push_back({s_name, sf->score});
+            }
+            else
+            {
+                auto rez = find_if(v_top.begin(), v_top.end(), [=] (auto i) { return i.score == score_min; } );
+                rez->score = sf->score;
+                rez->name = s_name;
+            }
+            sort(v_top.begin(), v_top.end(), [] (auto &a, auto &b) { return a.score > b.score; } );
         }
 
+        stringstream ss;
         //------- name => score   
         for (auto s : v_top)
         {
+            
             cout << s.name << " => " << s.score << endl;
         }
+
+        s_file.open("snake.top", std::ios::out | std::ios::trunc);
+
+        for (auto r : v_top)
+        {
+            ss.str("");
+            ss << r.name << " => " << r.score;
+            s_file << codeString(ss.str(), 11) << endl;
+        }
+        s_file.close();
+
+        cout << "Input number for play again (0 - exit): ";
+        cin >> run;
     }
 
-    // read  and write score
-
-   delete sf;
-
-   return 0;
+    delete sf;
+    return 0;
 }
