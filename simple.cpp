@@ -3,6 +3,7 @@
 #include <vector>
 #include <thread>
 #include <chrono>
+#include <string>
 
 using namespace std;
 
@@ -12,49 +13,65 @@ int randint(int min_value, int max_value)
     return rez + min_value;
 }
 
-vector<int> arr_source;
-vector<int> arr_odd;
-vector<int> arr_even;
-vector<int> arr_triple;
-int answer = 0;
+/*/ --------------- домашка
+разбить строку на символы и вывести их через print_char_code
+и сформиворать новую строку из четных кодов
+/*/
 
-void check_odd()
+int sq () { return 0; };
+
+int sq_4 () { return 2; };
+
+int char_to_int(char arg) { return (int)arg;};
+
+void print_char_code (char arg, int(*func_ptr)(char))
 {
-    for (int i : arr_source)
-    {
-        if (i & 1) arr_odd.push_back(i);
-        else arr_even.push_back(i);
-    }   
-    answer++;
+    cout << "symbol: " << arg << "   code: " << func_ptr(arg) << endl;
 }
 
-void check_triple()
+void printSQ (int arg, int(*func_ptr)())
 {
-    for (int i : arr_source)
+    if (arg == 4 || arg == 0)
     {
-        if (i % 3 == 0) arr_triple.push_back(i);
-    }   
-    answer++;
+        int i = func_ptr();
+        cout << "sq(" << arg << ") = " << i << endl;
+    }
+    else
+        cout << "value not 4" << endl;
+}
+
+int sum_string (string a, string b)
+{
+    return stoi(a) + stoi(b);
+}
+
+string convert_string  (int arg) 
+{
+    stringstream t_str;
+    t_str << arg * 100;
+    return t_str.str();
+}
+
+string int_to_string (int arg) 
+{ 
+    stringstream t_str;
+    t_str << arg;
+    return t_str.str();
+};
+
+string string_concat (char arg, int arg2, string(*func_ptr)(int))
+{
+    stringstream t_str;
+    t_str << func_ptr(arg2) << " " << arg;
+    return t_str.str();
 }
 
 int main ()
 {
-    auto sum { [] (auto a, auto b) { return a + b; }};
+    cout << string_concat('$', 100, &int_to_string) << endl;
+    cout << string_concat('P', 100, &convert_string) << endl;
 
-    auto to_string { [] (auto x) { stringstream s; s << x; return s.str(); } };
-    auto print_string { [] (string x )  { cout << x << endl; } };
-    
-    int size = randint(10, 20);
-
-    for (int i = 0; i < size; i++)  arr_source.push_back(randint(10, 99));
-
-    cout << "triple:";
-    for (int i : arr_source) cout << " " << i;
-    cout << endl;
-
-    cout << sum(arr_source[0], arr_source[1]) << endl;
-
-    print_string(to_string(2.45));
+    cout << string_concat('$', sum_string("34", "66"), &int_to_string) << endl;
 
     return 0;
 }
