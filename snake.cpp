@@ -213,13 +213,10 @@ void Matrix<T>::fillMatrix(bool arg)
 template<typename T>
 void Matrix<T>::fillMatrix(T arg)
 {
-    if (arg)
+    for (int i = 0; i < row; i++)
     {
-        for (int i = 0; i < row; i++)
-        {
-            for (int j = 0; j < column; j++)
-                matrix[i][j] = arg;
-        }
+        for (int j = 0; j < column; j++)
+            matrix[i][j] = arg;
     }
 }
 
@@ -872,6 +869,8 @@ int main()
 
         cout << "Input number for play again (0 - exit): ";
         cin >> run;
+
+
     }
 
     delete sf;

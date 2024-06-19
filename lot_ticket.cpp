@@ -117,13 +117,10 @@ void Matrix<T>::fillMatrix(bool arg)
 template<typename T>
 void Matrix<T>::fillMatrix(T arg)
 {
-    if (arg)
+    for (int i = 0; i < row; i++)
     {
-        for (int i = 0; i < row; i++)
-        {
-            for (int j = 0; j < column; j++)
-                matrix[i][j] = arg;
-        }
+        for (int j = 0; j < column; j++)
+            matrix[i][j] = arg;
     }
 }
 
@@ -152,11 +149,12 @@ void TicketField::fill()
     int x;
     while (make_fill)
     {
+        fillMatrix((u_short)0);
         for (int _r = 0; _r < row; _r++)
         {
             for (int _c = 0; _c < COL_COUNT; _c++)
             {
-                rand = randint(1,90);
+                rand = (u_short)randint(1,90);
                 x = rand / 10;
                 if (x == 9) x--;
                 if (matrix[_r][x] == 0)
@@ -165,19 +163,13 @@ void TicketField::fill()
                     _c--;
             }
         }
-
-        view();
-
         for (int _c = 0; _c < column; _c++)
         {
             if (
                 (matrix[0][_c] == 0 && matrix[1][_c] == 0  && matrix[2][_c]  == 0) ||
-                (matrix[0][_c] > 0 && matrix[1][_c] > 0  && matrix[2][_c] > 0)
+                (matrix[0][_c] > 0 && matrix[1][_c] > 0  && matrix[2][_c] > 0 ) 
             )
-            {
-                fillMatrix((u_short)0);
                 break;
-            }
             else
             {
                 if (_c == 8)    make_fill = false;
@@ -195,7 +187,6 @@ void TicketField::view()
             if (matrix[_r][_c] == 0)
                 cout << "   ";
             else 
-//                cout << "xx ";
                 cout << setw(2) << matrix[_r][_c] << " ";
         }
         cout << endl;
@@ -232,11 +223,14 @@ void Ticket::view()
 
 int main()
 {
-    Ticket *t = new Ticket();
 
-    t->view();
-
-    delete t;
-
+    for (int i = 0; i < 10; i++)
+    {
+        cout << "ticket: " << i + 1 << endl;
+        Ticket *t = new Ticket();
+        t->view();
+        delete t;
+        cout << endl;
+    }
     return 0;
 }
