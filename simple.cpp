@@ -4,6 +4,7 @@
 #include <thread>
 #include <chrono>
 #include <string>
+#include <cmath>
 
 using namespace std;
 
@@ -13,65 +14,63 @@ int randint(int min_value, int max_value)
     return rez + min_value;
 }
 
-/*/ --------------- домашка
-разбить строку на символы и вывести их через print_char_code
-и сформиворать новую строку из четных кодов
+/*/ --------------- 
+int
+arr 1
+arr 2
+arr 3 = arr 1 + arr 2
+arr 4 = arr 1 - arr 2
 /*/
 
-int sq () { return 0; };
-
-int sq_4 () { return 2; };
-
-int char_to_int(char arg) { return (int)arg;};
-
-void print_char_code (char arg, int(*func_ptr)(char))
-{
-    cout << "symbol: " << arg << "   code: " << func_ptr(arg) << endl;
-}
-
-void printSQ (int arg, int(*func_ptr)())
-{
-    if (arg == 4 || arg == 0)
-    {
-        int i = func_ptr();
-        cout << "sq(" << arg << ") = " << i << endl;
-    }
-    else
-        cout << "value not 4" << endl;
-}
-
-int sum_string (string a, string b)
-{
-    return stoi(a) + stoi(b);
-}
-
-string convert_string  (int arg) 
-{
-    stringstream t_str;
-    t_str << arg * 100;
-    return t_str.str();
-}
-
-string int_to_string (int arg) 
-{ 
-    stringstream t_str;
-    t_str << arg;
-    return t_str.str();
+struct blabla {
+    char letter;
+    int  number;
 };
-
-string string_concat (char arg, int arg2, string(*func_ptr)(int))
-{
-    stringstream t_str;
-    t_str << func_ptr(arg2) << " " << arg;
-    return t_str.str();
-}
 
 int main ()
 {
-    cout << string_concat('$', 100, &int_to_string) << endl;
-    cout << string_concat('P', 100, &convert_string) << endl;
+    vector<blabla> arr_1;
+    vector<blabla> arr_2;
+    int sum_1 = 0;
+    int sum_2 = 0;
+    bool e1 = false;
+    
+    cout << e1 << endl;
 
-    cout << string_concat('$', sum_string("34", "66"), &int_to_string) << endl;
+    for (int k = 0; k < 10; k++)
+    {
+        arr_1.push_back({(char)randint(32, 126), randint(0, 10)});
+        arr_2.push_back({(char)randint(32, 126), randint(0, 10)});
+    }
+/**/
+    for (int i = 0; i < 10; i++)
+    {
+        char c1 = arr_1[i].letter;
+        char c2 = arr_2[i].letter;
+        if ((c1 == c2 || abs(c1 - c2) == 32) &&
+         ((c1 >= 'a' && c1 <='z') || (c1 >= 'A' && c1 <='Z')) && 
+         ((c2 >= 'a' && c2 <='z') || (c2 >= 'A' && c2 <='Z')))
+        {
+            e1 = true;
+            break;
+        }
+    } 
 
+    cout << e1 << endl;
+
+    cout << "arr 1: ";
+    for (auto i : arr_1) cout << " " << i.letter << ":" << i.number;
+    cout << endl;
+
+    cout << "arr 2: ";
+    for (auto i : arr_2) cout << " " << i.letter << ":" << i.number;
+    cout << endl;
+
+    //cout << "s1: " << sum_1 << "  s2: " << sum_2 << endl;
+
+
+
+    (e1) ?  cout <<  "Win!!" : cout << "Try again";
+    cout << endl;
     return 0;
 }

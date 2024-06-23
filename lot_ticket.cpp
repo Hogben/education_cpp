@@ -154,7 +154,7 @@ void TicketField::fill()
         {
             for (int _c = 0; _c < COL_COUNT; _c++)
             {
-                rand = (u_short)randint(1,90);
+                rand = (u_short)randint(0,1000000)%90+1;
                 x = rand / 10;
                 if (x == 9) x--;
                 if (matrix[_r][x] == 0)
@@ -165,9 +165,12 @@ void TicketField::fill()
         }
         for (int _c = 0; _c < column; _c++)
         {
+            rand = matrix[0][_c] ^ matrix[1][_c];
+            rand ^= matrix[2][_c];
             if (
                 (matrix[0][_c] == 0 && matrix[1][_c] == 0  && matrix[2][_c]  == 0) ||
-                (matrix[0][_c] > 0 && matrix[1][_c] > 0  && matrix[2][_c] > 0 ) 
+                (matrix[0][_c] > 0 && matrix[1][_c] > 0  && matrix[2][_c] > 0 ) ||
+                rand == 0
             )
                 break;
             else
@@ -191,7 +194,7 @@ void TicketField::view()
         }
         cout << endl;
     }
-    cout << endl;
+//      cout << endl;
 }
 
 class Ticket
@@ -208,10 +211,7 @@ class Ticket
         ~Ticket() { delete[] field; } 
 
         void view();
-
-    protected:
         TicketField **field;
-
 };
 
 void Ticket::view()
@@ -221,16 +221,194 @@ void Ticket::view()
     field[1]->view();
 }
 
+class PlayLottery
+{
+    public:     
+        PlayLottery (int count) : size(count), game(0)
+        {
+            ticket = new Ticket*[count];
+            for (int i = 0; i < count; i++) ticket[i] = new Ticket();
+        }
+        ~PlayLottery() { delete[] ticket; }
+
+        Ticket **ticket;
+        vector<u_short> play_number;
+
+        void check_jeckpot(u_short num);
+        void get_number(u_short num);
+        void play();
+        void view();
+
+    protected:
+        bool check_column();
+        bool check_field();
+        bool check_ticket();
+        
+        int size;
+        int game;
+};
+
+void PlayLottery::view()
+{
+    for (int i = 0; i < size; i++)
+    {
+        cout << "ticket " << i+1 << endl;
+        ticket[i]->view();
+    }
+    cout << "=======================" << endl;
+}
+
+void PlayLottery::play()
+{
+    bool try_num;
+    u_short c_num;
+    cout << "start:";
+    while (game < 3)
+    {
+        try_num = true;
+        while (try_num)
+        {
+            c_num = randint(1,90);
+            if (find(play_number.begin(), play_number.end(), c_num) == play_number.end())  try_num = false;
+        }
+        play_number.push_back(c_num);
+        cout << " " << c_num;
+        check_jeckpot(c_num);
+    }
+}
+
+void PlayLottery::get_number(u_short num)
+{
+    bool find = false;
+    for (int i = 0; i < size; i++)
+    {
+        for (int _f = 0; _f < 2; _f++)
+        {
+            find = false;
+            for (int _r = 0; _r < ticket[i]->field[_f]->row; _r++)
+            {
+                for (int _c = 0; _c < ticket[i]->field[_f]->column; _c++)
+                {
+                    if (ticket[i]->field[_f]->matrix[_r][_c] == num)
+                    {
+                        find = true;
+                        ticket[i]->field[_f]->matrix[_r][_c] = 0;
+                        break;      
+                    }
+                }
+                if (find)   break;
+            }
+        }
+    }
+}
+
+void PlayLottery::check_jeckpot(u_short num)
+{
+    get_number(num);
+    switch (game)
+    {
+    case 0:
+        if (check_column()) game++;
+        break;
+    case 1:
+        if (check_field()) game++;
+        break;
+    case 2:
+        if (check_ticket())  game++;;
+        break;
+    }
+}
+
+bool PlayLottery::check_column()
+{
+    bool rez = false;
+    bool find = false;
+    u_short sum;
+    for (int i = 0; i < size; i++)
+    {
+        for (int _f = 0; _f < 2; _f++)
+        {
+            find = false;
+            for (int _r = 0; _r < ticket[i]->field[_f]->row; _r++)
+            {
+                sum = 0;
+                for (int _c = 0; _c < ticket[i]->field[_f]->column; _c++)
+                {
+                    sum += ticket[i]->field[_f]->matrix[_r][_c];
+                }
+                if (sum == 0)
+                {
+                    find = true;                    
+                    cout  << endl << "ticket: " << i + 1 << " win in game 1!!!" << endl;
+                    rez = true;
+                    break;
+                }
+            }
+            if (find)   break;
+        }
+    }
+    return rez;
+}
+
+bool PlayLottery::check_field()
+{
+    bool rez = false;
+    u_short sum;
+    for (int i = 0; i < size; i++)
+    {
+        for (int _f = 0; _f < 2; _f++)
+        {
+            sum = 0;
+            for (int _r = 0; _r < ticket[i]->field[_f]->row; _r++)
+            {
+                for (int _c = 0; _c < ticket[i]->field[_f]->column; _c++)
+                {
+                    sum += ticket[i]->field[_f]->matrix[_r][_c];
+                }
+            }
+            if (sum == 0)
+            {
+                cout  << endl << "ticket: " << i + 1 << " win in game 2!!!" << endl;
+                rez = true;
+                break;
+            }
+        }
+    }
+    return rez;
+}
+
+bool PlayLottery::check_ticket()
+{
+    bool rez = false;
+    u_short sum;
+    for (int i = 0; i < size; i++)
+    {
+        for (int _f = 0; _f < 2; _f++)
+        {
+            sum = 0;
+            for (int _r = 0; _r < ticket[i]->field[_f]->row; _r++)
+            {
+                for (int _c = 0; _c < ticket[i]->field[_f]->column; _c++)
+                {
+                    sum += ticket[i]->field[_f]->matrix[_r][_c];
+                }
+            }
+        }
+        if (sum == 0)
+        {
+            cout  << endl << "ticket: " << i + 1 << " win in game 3!!!" << endl;
+            rez = true;
+            break;
+        }
+    }
+    return rez;
+}
+
 int main()
 {
-
-    for (int i = 0; i < 10; i++)
-    {
-        cout << "ticket: " << i + 1 << endl;
-        Ticket *t = new Ticket();
-        t->view();
-        delete t;
-        cout << endl;
-    }
+    PlayLottery *pl = new PlayLottery(10);
+    pl->view();
+    pl->play();
+    delete pl;
     return 0;
 }
