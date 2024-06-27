@@ -5,6 +5,7 @@
 #include <chrono>
 #include <string>
 #include <cmath>
+#include <map>
 
 using namespace std;
 
@@ -14,63 +15,95 @@ int randint(int min_value, int max_value)
     return rez + min_value;
 }
 
-/*/ --------------- 
-int
-arr 1
-arr 2
-arr 3 = arr 1 + arr 2
-arr 4 = arr 1 - arr 2
-/*/
+map<wchar_t, string> t_letter;
+//----- домашка разобраться с русскими буквами в строке wchar_t;
 
-struct blabla {
-    char letter;
-    int  number;
-};
+string tranc(string s_in)
+{
+    stringstream rez;
+    for (wchar_t t_ch : s_in)
+    {
+        rez << t_letter.at(t_ch);
+    }
+    return rez.str();
+}
+
+map<int, string> people;
+map<int, string> staff;
+map<int, int> _ref;
 
 int main ()
 {
-    vector<blabla> arr_1;
-    vector<blabla> arr_2;
-    int sum_1 = 0;
-    int sum_2 = 0;
-    bool e1 = false;
+    setlocale(LC_ALL, "Russian"); // 0, ""
+
+    t_letter.insert({' ', " "});
+    t_letter.insert({'а', "a"});
+    t_letter.insert({'б', "b"});
+    t_letter.insert({'в', "v"});
+    t_letter.insert({'г', "g"});
+    t_letter.insert({'д', "d"});
+    t_letter.insert({'е', "e"});
+    t_letter.insert({'ё', "yo"});
+    t_letter.insert({'ж', "zh"});
+    t_letter.insert({'з', "z"});
+    t_letter.insert({'и', "i"});
+    t_letter.insert({'й', "j"});
+    t_letter.insert({'к', "k"});
+    t_letter.insert({'л', "l"});
+    t_letter.insert({'м', "m"});
+    t_letter.insert({'н', "n"});
+    t_letter.insert({'о', "o"});
+    t_letter.insert({'п', "p"});
+    t_letter.insert({'р', "r"});
+    t_letter.insert({'с', "s"});
+    t_letter.insert({'т', "t"});
+    t_letter.insert({'у', "u"});
+    t_letter.insert({'ф', "f"});
+    t_letter.insert({'х', "h"});
+    t_letter.insert({'ц', "c"});
+    t_letter.insert({'ч', "ch"});
+    t_letter.insert({'ш', "sh"}); 
+    t_letter.insert({'щ', "shh"});
+    t_letter.insert({'ь', "`"});
+    t_letter.insert({'ы', "y"});
+    t_letter.insert({'ъ', "`"});
+    t_letter.insert({'э', "ye"});
+    t_letter.insert({'ю', "yu"});
+    t_letter.insert({'я', "ya"});
     
-    cout << e1 << endl;
+    string s = "";
 
-    for (int k = 0; k < 10; k++)
+    while (s != "0")
     {
-        arr_1.push_back({(char)randint(32, 126), randint(0, 10)});
-        arr_2.push_back({(char)randint(32, 126), randint(0, 10)});
+        cin >> s;
+        cout << tranc(s);
     }
-/**/
-    for (int i = 0; i < 10; i++)
-    {
-        char c1 = arr_1[i].letter;
-        char c2 = arr_2[i].letter;
-        if ((c1 == c2 || abs(c1 - c2) == 32) &&
-         ((c1 >= 'a' && c1 <='z') || (c1 >= 'A' && c1 <='Z')) && 
-         ((c2 >= 'a' && c2 <='z') || (c2 >= 'A' && c2 <='Z')))
-        {
-            e1 = true;
-            break;
-        }
-    } 
+/*/
 
-    cout << e1 << endl;
+    people.insert({1, "Jony"});
+    people.insert({2, "Bob"});
+    people.insert({3, "Sara"});
+    people.insert({4, "Jony"});
+    people.insert({5, "Alex"});
+    people.insert({6, "Akim"});
 
-    cout << "arr 1: ";
-    for (auto i : arr_1) cout << " " << i.letter << ":" << i.number;
-    cout << endl;
+    staff.insert({1, "manager"});
+    staff.insert({2, "worker"});
+    staff.insert({3, "driver"});
 
-    cout << "arr 2: ";
-    for (auto i : arr_2) cout << " " << i.letter << ":" << i.number;
-    cout << endl;
-
-    //cout << "s1: " << sum_1 << "  s2: " << sum_2 << endl;
+    _ref.insert({1, 1});
+    _ref.insert({2, 3});
+    _ref.insert({3, 1});
+    _ref.insert({4, 2});
+    _ref.insert({5, 3});
+    _ref.insert({6, 1});
 
 
+    for (int i = 1; i <= 6; i++) 
+        cout << people.at(i) << " ==> " << staff.at(_ref.at(i)) << endl;
 
-    (e1) ?  cout <<  "Win!!" : cout << "Try again";
-    cout << endl;
+/*/
+ 
+
     return 0;
 }
