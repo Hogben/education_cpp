@@ -7,37 +7,15 @@
 #include <algorithm>
 #include <thread>
 #include <stdlib.h>
-#include <experimental/random>
 
 using namespace std;
 
 static const bool USE_LOG = false;
-
-class Logger
+int randint(int min_value, int max_value)
 {
-    public:
-        Logger (string f_name, bool write = true)
-        {
-            if (write )
-                _file.open(f_name, ios::out | ios::trunc);
-            else
-                _file.open(f_name, ios::in);
-            if (_file.bad()) this->~Logger();
-        }
-        ~Logger() { if (_file.is_open())    _file.close(); }
-
-        template<typename T>
-        void write(T arg, bool with_endl = true) { _file << arg; if (with_endl) _file << endl; }
-
-        void write() { _file << _str.str(); _file << endl; _str.str(""); }
-        string read() { _str.str(""); _str << _file.rdbuf(); return _str.str(); }
-        
-        stringstream _str;
-
-    private:
-        fstream    _file;
-};
-
+    int rez = chrono::system_clock::now().time_since_epoch().count() % (max_value - min_value + 1);
+    return rez + min_value;
+}
 template<typename T> class Matrix
 {
     public:
@@ -56,7 +34,8 @@ template<typename T> class Matrix
         T       getExtremum(bool max = true);
         void    copy_to(Matrix<T> *);
         void    copy_from(Matrix<T> *);
-
+        Matrix<T>*  multi(Matrix<T> *);
+        Matrix<T>*  exponent(int arg);  //----- дописать чезер цикликлический вызов multi
         int column = 0;
         int row = 0;
         T   **matrix;
@@ -65,6 +44,29 @@ template<typename T> class Matrix
         T   max_value = 0;
         T   min_value = 0;
 };
+
+template<typename T>
+Matrix<T>*  Matrix<T>::multi(Matrix<T> *mtrx)
+{
+    //T sum = 0;
+    Matrix<T> *rez;   
+    if (column == mtrx->row) 
+    {
+        rez = new Matrix<T>(mtrx->column, row);
+        for (int x = 0; x < mtrx->column; x++ )
+        {   
+            for (int y = 0; y < row; y++)
+            {
+                rez->matrix[y][x] = 0;
+                for (int x1 = 0; x1 < column; x1++)
+                {
+                    rez->matrix[y][x] += matrix[y][x1]*mtrx->matrix[x1][x];
+                }
+            }
+        }
+    }
+}
+
 
 template<typename T>
 void Matrix<T>::copy_to(Matrix<T> *arg)
@@ -120,7 +122,7 @@ void Matrix<T>::fillMatrix(bool arg)
         for (int i = 0; i < row; i++)
         {
             for (int j = 0; j < column; j++)
-                matrix[i][j] = experimental::randint((int)min_value, (int)max_value);
+                matrix[i][j] = randint((int)min_value, (int)max_value);
         }
     }
     else
@@ -265,7 +267,7 @@ void DrawMatrix<T>::view()
 template<typename T> class MultiMatrix
 {
     public:
-        MultiMatrix(int _column, int _row, int count) : size(count), row(_row), column(_column)
+        MultiMatrix(int column, int row, int count) : size(count)
         {
             m_matrix = new Matrix<T>*[count];
             for (int i = 0; i < count; i++) m_matrix[i] = new Matrix<T> (column, row);
@@ -278,12 +280,26 @@ template<typename T> class MultiMatrix
         void    fillMatrix(const T);
         void    fillMatrix(bool = false);
 
-        int row;
-        int column;
+        void    setMaxValue(const T arg);
+        void    setMinValue(const T arg);
 
     private:
         int size;
 };
+
+template<typename T>
+void MultiMatrix<T>::setMaxValue(const T arg)
+{
+    for (int i = 0; i < getSize(); i++)
+        m_matrix[i]->setMaxValue(arg);
+}
+
+template<typename T>
+void MultiMatrix<T>::setMinValue(const T arg)
+{
+    for (int i = 0; i < getSize(); i++)
+        m_matrix[i]->setMinValue(arg);
+}
 
 template<typename T>
 void MultiMatrix<T>::fillMatrix(const T arg)
@@ -291,27 +307,16 @@ void MultiMatrix<T>::fillMatrix(const T arg)
     for (int i = 0; i < getSize(); i++)
         m_matrix[i]->fillMatrix(arg);
 }
-
-template<typename T>
-void MultiMatrix<T>::fillMatrix(bool random)
-{
-    for (int i = 0; i < getSize(); i++)
-        m_matrix[i]->fillMatrix(random);
-}
-
 template<typename T>
 class DrawMultiMatrix  : public MultiMatrix<T>
 {
     public:
         DrawMultiMatrix  (int column, int row, int count) : MultiMatrix<T>(column, row, count) { w_column = new int[count]; }
         ~DrawMultiMatrix()  { delete w_column; }
-        void view();
+        void view(bool = true);
         void set_row_numbering (const bool arg) { row_numbering = arg; }
         void set_column_numbering (const bool arg) { column_numbering = arg; }
-        void set_separate_row (const bool arg) { separate_row = arg; }
-        void set_separate_column (const bool arg) { separate_column = arg; }
-        void set_separate (const bool arg) { set_separate_column(arg); set_separate_row(arg); }
-        void set_numbering (const bool arg)
+        void set_separate_row (const bool arg) 
         {
             set_row_numbering(arg);
             set_column_numbering(arg);
@@ -408,7 +413,14 @@ void DrawMultiMatrix <T>::print_column_number(int index)
             cout << setw(w_column[index]) << i+1;
         if (separate_column) cout << " ";
     }
-}MultiMatrix<T>
+}
+
+template<typename T>
+void DrawMultiMatrix <T>::print_column_line(int index)
+{
+    if (row_numbering)
+    {
+        cout << setw(w_row+1) << " ";
         if (separate_column) cout << "_";
     }
 
@@ -418,9 +430,9 @@ void DrawMultiMatrix <T>::print_column_number(int index)
 }
 
 template<typename T>
-void DrawMultiMatrix <T>::view()
+void DrawMultiMatrix <T>::view(bool clr)
 {
-    clear_console();
+    if (clr)    clear_console();
     calc_w_column();
     if (row_numbering)  calc_w_row();
 
@@ -454,41 +466,39 @@ void DrawMultiMatrix <T>::view()
 }
 
 template<typename T>
-class DrawMultiMatrix_ext  : public DrawMultiMatrix<T>
+class DrawMultiMatrix_mirrow  : public DrawMultiMatrix<T>
 {
     public:
-        DrawMultiMatrix_ext  (int column, int row) : DrawMultiMatrix<T>(column, row, 4) {}
-
-        void calculate ();
+        DrawMultiMatrix_mirrow (int column, int row, int count) : DrawMultiMatrix<T>(column, row, count) { mirror = new DrawMultiMatrix<T>(row, column, count); }
+        ~DrawMultiMatrix_mirrow() { delete mirror;}        
+        void _mirror();
+        DrawMultiMatrix<T>* mirror;
 };
 
 template<typename T>
-void DrawMultiMatrix_ext<T>::calculate()
+void DrawMultiMatrix_mirrow<T>::_mirror() 
 {
-    for (int y = 0; y < MultiMatrix<T>::row; y++)    
+    for (int i = 0; i < MultiMatrix<T>::getSize(); i++)
     {
-        for (int x = 0; x < MultiMatrix<T>::column; x++)    
+        for (int y = 0; y < MultiMatrix<T>::m_matrix[0]->row; y++)
         {
-            MultiMatrix<T>::m_matrix[2]->matrix[y][x] = MultiMatrix<T>::m_matrix[0]->matrix[y][x] + MultiMatrix<T>::m_matrix[1]->matrix[y][x];
-            MultiMatrix<T>::m_matrix[3]->matrix[y][x] = MultiMatrix<T>::m_matrix[0]->matrix[y][x] - MultiMatrix<T>::m_matrix[1]->matrix[y][x];
+            for (int x = 0; x < MultiMatrix<T>::m_matrix[0]->column; x++)
+            {
+                mirror->MultiMatrix<T>::m_matrix[i]->matrix[x][y] = MultiMatrix<T>::m_matrix[i]->matrix[y][x]; 
+            }
         }
-    }
+    }//   l (m * m) n
 }
 
 int main()
 {
-    DrawMultiMatrix_ext<int> mtrx  = DrawMultiMatrix_ext<int> (3, 3);
+    DrawMultiMatrix_mirrow<int> mx = DrawMultiMatrix_mirrow<int> (4, 5 , 3);
+    mx.setMinValue(0);
+    mx.setMaxValue(9);
+    mx.fillMatrix(true);
 
-    mtrx.m_matrix[0]->setMaxValue(20);
-    mtrx.m_matrix[1]->setMaxValue(20);
-    mtrx.m_matrix[0]->fillMatrix(true);
-    mtrx.m_matrix[1]->fillMatrix(true);
-
-    mtrx.calculate();
-
-    mtrx.view();
-
+    mx.view();
+    mx._mirror();
+    mx.mirror->view(false);
     return 0;
 }
-
-
