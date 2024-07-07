@@ -10,6 +10,7 @@
 
 using namespace std;
 
+//----------------------- найти и исравить ошибку в спепени<=>умножении
 static const bool USE_LOG = false;
 int randint(int min_value, int max_value)
 {
@@ -34,8 +35,8 @@ template<typename T> class Matrix
         T       getExtremum(bool max = true);
         void    copy_to(Matrix<T> *);
         void    copy_from(Matrix<T> *);
-        Matrix<T>*  multi(Matrix<T> *);
-        Matrix<T>*  exponent(int arg);  //----- дописать чезер цикликлический вызов multi
+        bool    multi(Matrix<T> *m, Matrix<T>* rez);
+        bool    exponent(int arg, Matrix<T>*rez);  
         int column = 0;
         int row = 0;
         T   **matrix;
@@ -46,13 +47,34 @@ template<typename T> class Matrix
 };
 
 template<typename T>
-Matrix<T>*  Matrix<T>::multi(Matrix<T> *mtrx)
+bool Matrix<T>::exponent(int arg, Matrix<T> *rez)
+{
+    bool r = false;
+    if (row == column)
+    {
+        r = true;
+        rez = new Matrix<T>(column, row);
+        Matrix<T> *t_mtx = new Matrix<T>(column, row);
+        copy_to(rez);
+
+        for (int i = 0; i < arg - 1; i++)
+        {
+            multi(rez, t_mtx);
+            rez->copy_from(t_mtx);
+        }
+    }
+    return r;
+}
+
+template<typename T>
+bool  Matrix<T>::multi(Matrix<T> *mtrx, Matrix<T> *rez)
 {
     //T sum = 0;
-    Matrix<T> *rez;   
+    bool r = false;   
     if (column == mtrx->row) 
     {
-        rez = new Matrix<T>(mtrx->column, row);
+        r = true;
+//        rez = new Matrix<T>(mtrx->column, row);
         for (int x = 0; x < mtrx->column; x++ )
         {   
             for (int y = 0; y < row; y++)
@@ -65,6 +87,7 @@ Matrix<T>*  Matrix<T>::multi(Matrix<T> *mtrx)
             }
         }
     }
+    return r;
 }
 
 
@@ -153,7 +176,7 @@ class DrawMatrix : public Matrix<T>
 {
     public:
         DrawMatrix (int column, int row) : Matrix<T>(column, row) {}
-        void view();
+        void view(bool = true);
         void set_row_numbering (const bool arg) { row_numbering = arg; }
         void set_column_numbering (const bool arg) { column_numbering = arg; }
         void set_separate_row (const bool arg) { separate_row = arg; }
@@ -214,9 +237,9 @@ int DrawMatrix<T>::calc_w_column()
 }
 
 template<typename T>
-void DrawMatrix<T>::view()
+void DrawMatrix<T>::view(bool clr)
 {
-    clear_console();
+    if (clr)    clear_console();
     calc_w_column();
     if (row_numbering)  calc_w_row();
     if (column_numbering)
@@ -492,13 +515,16 @@ void DrawMultiMatrix_mirrow<T>::_mirror()
 
 int main()
 {
-    DrawMultiMatrix_mirrow<int> mx = DrawMultiMatrix_mirrow<int> (4, 5 , 3);
-    mx.setMinValue(0);
-    mx.setMaxValue(9);
-    mx.fillMatrix(true);
+    DrawMatrix<int> *exp =  new DrawMatrix<int>(3,3);
+    DrawMatrix<int> m = DrawMatrix<int>(3,3);
+    m.fillMatrix(0);
+    m.matrix[0][1] = 1;
+    m.matrix[1][0] = 1;
+    m.matrix[2][1] = 1;
+    m.matrix[1][2] = 1;
+    m.view();
 
-    mx.view();
-    mx._mirror();
-    mx.mirror->view(false);
+    if (m.exponent(2,(Matrix<int>*)exp)) exp->view(false);
+
     return 0;
 }
