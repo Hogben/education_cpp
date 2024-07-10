@@ -53,7 +53,7 @@ bool Matrix<T>::exponent(int arg, Matrix<T> *rez)
     if (row == column)
     {
         r = true;
-        rez = new Matrix<T>(column, row);
+//        rez = new Matrix<T>(column, row);
         Matrix<T> *t_mtx = new Matrix<T>(column, row);
         copy_to(rez);
 
@@ -525,6 +525,7 @@ int main()
     m.view();
 
     if (m.exponent(2,(Matrix<int>*)exp)) exp->view(false);
+    if (m.exponent(3,(Matrix<int>*)exp)) exp->view(false);
 
     return 0;
 }
