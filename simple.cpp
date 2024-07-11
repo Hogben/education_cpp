@@ -17,6 +17,7 @@ int randint(int min_value, int max_value)
     int rez = chrono::system_clock::now().time_since_epoch().count() % (max_value - min_value + 1);
     return rez + min_value;
 }
+/*/
 template<typename T> class Matrix
 {
     public:
@@ -512,20 +513,137 @@ void DrawMultiMatrix_mirrow<T>::_mirror()
         }
     }//   l (m * m) n
 }
+/*/
 
+//e = 1 + 1/1! + 1/2! +1/3! до 15
+
+//p/4 = 1 - 1/3 + 1/5 - 1/7 + 1/9
+uint facktorial(uint arg)
+{
+    if (arg == 0) return 1;
+    uint res = 1;
+    while (arg > 1)
+    {
+        res *= arg;
+        arg--;    
+    }
+    return res;
+}
+
+uint r_facktorial(uint arg)
+{
+    if (arg == 0) return 1;
+    if (arg == 1) return arg;
+    return arg * r_facktorial(arg - 1);
+}
+
+double pi(int count)
+{
+    double res = 1;
+    for (int i = 0, j = 3; i <= count; i++, j +=2)
+    {
+        if (i & 1)  
+            res += (double)1/j;
+        else 
+            res -= (double)1/j;
+    }
+    return res*4;
+}
+
+double exp(int count)
+{
+    double res = 1;
+    for (int i = 1; i <= count; i++)
+    {
+        res += (double)1/facktorial(i);
+    }
+    return res;
+}
+
+struct cube_root 
+{ 
+    int root; 
+    int ost; 
+};
+/*/
+cube_root calc_cube_root(int arg)
+{
+    cube_root res = { 0, 0 };
+    bool positive = true;
+    
+    if (arg == 0)   return res;
+
+    if (arg < 0)    positive = false;
+    
+    int i = (positive) ? 1 : -1;
+
+    while (true)
+    {
+        res.root = i;
+        if (i * i * i == arg)
+            break;
+        if (positive)
+        {
+            if (i * i * i > arg)
+            {
+                res.root = i-1;  
+                res.ost = (arg - res.root * res.root * res.root);
+                break;
+            }
+        }
+        else
+        {
+            if (i * i * i < arg)
+            {
+                res.root = i+1;  
+                res.ost = (res.root * res.root * res.root) - arg;
+                break;
+            }
+        }
+        
+        if (positive)   i++;
+        else            i--;
+    }
+    return res;
+}
+/*/
+// 1, 1, 2, 3, 5, 8, 13, ....
+uint fib(int count)
+{
+    if (count < 3)        return 1;
+    uint first = 1;
+    uint second = 1;
+    uint res = 0;
+    for (uint i = 0; i < count - 2; i++ ) 
+    {
+        res = first + second;
+        first = second;
+        second = res;
+    }
+    return res;
+}
+
+uint r_fib(int count, uint first, uint second, int max)
+{
+    uint res = first + second;
+    first = second;
+    second = res;
+    if (count + 1 == max)   
+        return res;
+    else
+        return r_fib(count + 1, first, second, max);
+}
+/*
+uint r_f(uint n)
+{
+    if (count < 3)        return 1;
+    return r_f(n) + r_f(n - 1);
+}
+*/
 int main()
 {
-    DrawMatrix<int> *exp =  new DrawMatrix<int>(3,3);
-    DrawMatrix<int> m = DrawMatrix<int>(3,3);
-    m.fillMatrix(0);
-    m.matrix[0][1] = 1;
-    m.matrix[1][0] = 1;
-    m.matrix[2][1] = 1;
-    m.matrix[1][2] = 1;
-    m.view();
+    int i = 7;
 
-    if (m.exponent(2,(Matrix<int>*)exp)) exp->view(false);
-    if (m.exponent(3,(Matrix<int>*)exp)) exp->view(false);
-
+    cout << r_fib(2,1,1,i) << endl;
     return 0;
 }
