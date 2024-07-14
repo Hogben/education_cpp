@@ -439,14 +439,8 @@ void DrawMultiMatrix <T>::print_column_number(int index)
     }
 }
 
-template<typename T>
-void DrawMultiMatrix <T>::print_column_line(int index)
-{
-    if (row_numbering)
-    {
-        cout << setw(w_row+1) << " ";
-        if (separate_column) cout << "_";
-    }
+template<typename Tworld => добавить получение текста из файла
+
 
     cout << setw(
         MultiMatrix<T>::m_matrix[index]->column * w_column[index] + separate_column * MultiMatrix<T>::m_matrix[index]->column
@@ -641,11 +635,42 @@ uint r_f(uint count)
     return r_f(count - 1) + r_f(count - 2);
 }
 
+/*/
+Найти все прямоугольники с целыми длинами сторон данной целочисленной площади. 
+Например, для площади, равной 12, подходят три прямоугольника 1 х 12, 2 х 6, 3 х 4.
+/*/
 int main()
 {
-    int i = 25;
-
-    cout << r_f(i) << endl;
-    cout << fib(i) << endl;
+    bool run = true;
+    vector<int> k;
+    int  s;
+    cout << "enter 0 to exit" << endl;
+    while (run)
+    {
+        k.clear();
+        cout << "Enter values: " << endl;
+        cin >> s;
+        if (s == 0)
+        {
+            break;
+        }
+        for (int i = 1; i <= s/2; i++)
+        {
+            if (s % i == 0)
+            {
+                if (find(k.begin(), k.end(), i) != k.end())
+                {
+                    cout << "it's all" << endl;
+                    break;
+                }
+                else
+                {
+                    k.push_back(s/i);
+                    cout << i << " * " << s/i << endl; 
+                }
+            }
+        }
+    }
+    cout << "ending program..." << endl;
     return 0;
 }
