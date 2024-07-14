@@ -622,7 +622,7 @@ uint fib(int count)
     }
     return res;
 }
-
+/*/
 uint r_fib(int count, uint first, uint second, int max)
 {
     uint res = first + second;
@@ -633,17 +633,19 @@ uint r_fib(int count, uint first, uint second, int max)
     else
         return r_fib(count + 1, first, second, max);
 }
-/*
-uint r_f(uint n)
+/*/
+
+uint r_f(uint count)
 {
     if (count < 3)        return 1;
-    return r_f(n) + r_f(n - 1);
+    return r_f(count - 1) + r_f(count - 2);
 }
-*/
+
 int main()
 {
-    int i = 7;
+    int i = 25;
 
-    cout << r_fib(2,1,1,i) << endl;
+    cout << r_f(i) << endl;
+    cout << fib(i) << endl;
     return 0;
 }
