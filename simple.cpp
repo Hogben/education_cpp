@@ -47,12 +47,55 @@ template<typename T> class Matrix
         T   min_value = 0;
 };
 
-template<typename T>
-bool Matrix<T>::exponent(int arg, Matrix<T> *rez)
-{
-    bool r = false;
-    if (row == column)
-    {
+template<typename T>        if (max <= 2) 
+        {
+            cout << "Value too small." << endl;
+            continue;
+        }
+        for (int a = 2; a <= max; a++)
+        {
+            for (int b = 1; b < a; b++)
+            {
+                for (int c = b; c < a; c++)
+                {
+                    if (c + b > a)
+                    {
+                        if ((a * a) == (b * b) + (c * c))
+                        {
+                            if (check_nod(b, c, a))
+                            {
+                                cout << "Pifagor numbers: " << b << ", "<< c << ", "<< a << endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }        if (max <= 2) 
+        {
+            cout << "Value too small." << endl;
+            continue;
+        }
+        for (int a = 2; a <= max; a++)
+        {
+            for (int b = 1; b < a; b++)
+            {
+                for (int c = b; c < a; c++)
+                {
+                    if (c + b > a)
+                    {
+                        if ((a * a) == (b * b) + (c * c))
+                        {
+                            if (check_nod(b, c, a))
+                            {
+                                cout << "Pifagor numbers: " << b << ", "<< c << ", "<< a << endl;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+ 
+ 
         r = true;
 //        rez = new Matrix<T>(column, row);
         Matrix<T> *t_mtx = new Matrix<T>(column, row);
@@ -635,6 +678,48 @@ uint r_f(uint count)
     return r_f(count - 1) + r_f(count - 2);
 }
 
+
+// arg1 and arg2 < arg3
+bool check_nod(int arg1, int arg2, int arg3)
+{
+    bool res = true;
+    int min = (arg1 > arg2) ? arg2 : arg1;
+
+    if (Prime_number(arg1))
+    {
+        if (arg2 % arg1 == 0 && arg3 % arg1 == 0)   return false;
+    }
+
+    if (Prime_number(arg2))
+    {
+        if (arg1 % arg2 == 0 && arg3 % arg2 == 0)   return false;
+    }
+
+    for (int i = 2; i <= min; i++)
+    {
+        if (arg1 % i == 0 && arg2 % i == 0 && arg3 % i == 0)
+        {
+            res = false;
+            break;
+        }
+    }
+    return res;
+}
+
+bool Prime_number(int arg)
+{
+    bool res = true;
+    for (int i = arg/2; i > 1; i--)
+    {
+        if (arg % i == 0) 
+       {
+            res = false;
+            break;
+       }
+    }
+    return res;
+}
+
 /*/
 Найти все прямоугольники с целыми длинами сторон данной целочисленной площади. 
 Например, для площади, равной 12, подходят три прямоугольника 1 х 12, 2 х 6, 3 х 4.
@@ -642,35 +727,35 @@ uint r_f(uint count)
 int main()
 {
     bool run = true;
-    vector<int> k;
-    int  s;
     cout << "enter 0 to exit" << endl;
+    int S;
+
     while (run)
     {
-        k.clear();
         cout << "Enter values: " << endl;
-        cin >> s;
-        if (s == 0)
+        cin >> S;
+
+        if (S == 0 )   break;
+
+        for (int a = 1; a != 0; a++)
         {
-            break;
-        }
-        for (int i = 1; i <= s/2; i++)
-        {
-            if (s % i == 0)
+            for (int b = a; ; b++)
             {
-                if (find(k.begin(), k.end(), i) != k.end())
+                if (a*b > 2*S)
                 {
-                    cout << "it's all" << endl;
+                    a = 0;
                     break;
                 }
-                else
+
+                if (a * b == 2 * S)
                 {
-                    k.push_back(s/i);
-                    cout << i << " * " << s/i << endl; 
+                    //---- дописать проверку гипотинузы на целое число        
                 }
             }
         }
-    }
+
+
+   }
     cout << "ending program..." << endl;
     return 0;
 }
