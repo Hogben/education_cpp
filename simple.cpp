@@ -104,41 +104,138 @@ int main()
 }
 /*/
 
+
+/*/
+struct days
+{
+    int first_day;
+    int last_day;
+};
+
+
 int main()
 {
-    /*/
-    vector<int> mouse = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0};
-
-    int count_begin = 10;
-
-    while (mouse.size() > 1)
+    int guest;
+    bool run = true;
+    int **mas; 
+    vector<days> _guests;
+    while (run)
     {
-        for (int i = 0; i < 13; i++)
+        _guests.clear();
+        cin >> guest;   
+        if (guest == 0) break;
+        for (int i = 0; i < guest; i++)
         {
-            count_begin++;
-            if (count_begin == mouse.size())    count_begin = 0;
+            int t_int = randint(1, 100);
+            _guests.push_back({t_int, randint(t_int, 100)});
         }
-        mouse.erase(mouse.begin() + count_begin);
+        sort( _guests.begin(), _guests.end(), [](auto a, auto b){return a.last_day > b.last_day;});
+        mas = new int *[guest];
+        for (int i = 0;i < guest; i++) 
+        {
+            mas[i] = new int [_guests.begin()->last_day];
+            for (int k = 0; k < _guests.begin()->last_day; k++)
+            {
+                if (k < _guests[i].first_day - 1 || k > _guests[i].last_day - 1)
+                    mas[i][k] = 0;
+                else
+                    mas[i][k] = 1;
+            }
+        }
+        int t_max = 1;
+        int t_sum = 0;
+        for (int i = 0; i < _guests.begin()->last_day; i++)
+        {
+            t_sum = 0;
+            for (int j = 0; j < guest; j++) t_sum += mas[j][i];
+            if (t_sum > t_max) t_max = t_sum;
+        }
+        for (auto i : _guests)
+            cout << i.first_day << " ==> " << i.last_day << endl;
+        cout << "==================" << endl << t_max << endl;
     }
-    
-    cout << mouse[0] << endl;
-    /*/
-    vector<int> mouse = {1};
-    int count_begin = 0;
-    while (mouse.size() < 13)
+
+    return 0;
+}
+/*/
+
+
+/*/
+vector<uint> del; 
+
+void find_del(uint arg)
+{
+    del.clear();
+    del.push_back(arg);
+    del.push_back(1);
+    for (int i = 2; i <= arg/2; i++)
     {
-        for (int i = 0; i < 13; i++)
-        {
-            count_begin++;
-            if (count_begin == mouse.size())    count_begin = 0;
-        }
-        mouse.insert(mouse.begin() + count_begin, 0);
+        if (arg % i == 0) del.push_back(i);
     }
+}
 
-    for (int i : mouse)
-        cout << i << " ";
+bool check_num(uint arg1, uint arg2)
+{
+    if ( arg1 == arg2) return false;
+    bool res = true;
+    int  min = (arg1 < arg2) ? arg1 : arg2;
+    for (int i = 2; i <= min/2; i++)
+    {Совершенным числом называется число, равное сумме своих делителей, меньших его самого. Например, 28=1+2+4+7+14. Определите, является ли данное натуральное число совершенным. Найдите все совершенные числа на данном отрезке
+        if (arg1 % i  == 0 && arg2 % i == 0)
+            return false;
+    }
+    if (arg1 % arg2 == 0 || arg2 % arg1 == 0)
+        return false;
+    return res;
+}
 
-    cout << endl << "=================" << endl << count_begin + 1 << endl;
+bool check_triple(uint arg1, uint arg2, uint arg3)
+{
+    return (check_num(arg1, arg2) || check_num(arg1, arg3) || check_num(arg3, arg2));
+}
 
+int main ()
+{
+    uint number;
+    uint number2;
+    uint number3;
+    while (true)
+    {
+        cout << "number 1: " << endl;
+        cin >> number;
+        cout << "number 2: " << endl;
+        cin >> number2;
+        cout << "number 3: " << endl;
+        cin >> number3;
+        if (number == 0 || number2 == 0 )    break;
+        if (check_triple(number, number2, number3))
+            cout << "Great job" << endl;
+        else
+            cout << ".....wrong" << endl;
+    }
+    return 0;
+}
+/*/
+//Два нечетных простых числа, отличающиеся на 2, называются близнецами. Например, числа 5 и 7. 
+//Напишите программу, которая будет находить все числа-близнецы на отрезке [2; 1000].
+
+
+bool check_prime(int arg)
+{
+    bool res = true;
+    for (int i = 2; i <= arg/2; i++)
+    {
+        if (arg % i == 0)
+            return false;
+    }
+    return res;
+}
+int main ()
+{
+    for (int i = 3; i <= 999 - 2; i+=2)
+    {
+        if (check_prime(i) && check_prime(i+2))
+            cout << i << ", " << i+2 << endl;
+    }
     return 0;
 }
