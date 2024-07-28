@@ -230,12 +230,167 @@ bool check_prime(int arg)
     }
     return res;
 }
+
+
+class NiceInteger
+{
+    public:
+        NiceInteger(int arg) 
+        { 
+            value = arg; 
+            fill_div();
+            fill_digit();
+        }
+        bool is_perfect();
+        void fill_div();
+        void fill_digit();
+        bool is_prime() {return (div.size() == 2);}
+        bool is_even() {return !(value & 1);}
+        bool palindrome();
+        bool is_symmetric();
+        bool is_automorph(int arg = 2);
+        int  value_by_base(int);
+        int  root();
+        bool happy_ticket();
+        vector<int> div;
+        vector<int> digit;
+    protected:
+        int value;
+};
+
+int  NiceInteger::root()
+{
+    NiceInteger *t_int;
+    int res = 0;
+    for (int i : digit) res += i;
+    while (res > 9)
+    {
+        t_int = new NiceInteger(res);
+        res = 0;
+        for (int i : t_int->digit) res += i;
+        delete t_int;
+    }
+    return res;
+}
+
+int  NiceInteger::value_by_base(int arg)
+{
+    int s = 1;
+    int t_int = value;
+    int res = 0;
+    if (arg > 10 || arg < 2)   return -1;
+    if (arg == 10)  return value;
+    while (t_int > 0)
+    {
+        res += (t_int % arg) * s;
+        s *= 10;
+        t_int /= arg;
+    }
+    return res;
+}
+
+void NiceInteger::fill_div()
+{
+    div.push_back(1);
+    for (int i = 2; i <= value/2; i++)
+        if (value % i == 0)
+            div.push_back(i);
+    if (value || 0) div.push_back(value);
+}
+
+void NiceInteger::fill_digit()
+{
+    int t_int = value;
+    if (value == 0)
+    {
+        digit.push_back(0);
+        return;
+    }
+    while (t_int > 0)
+    {
+        digit.push_back(t_int % 10);
+        t_int /= 10;
+    }
+}
+
+bool NiceInteger::happy_ticket()
+{
+    if (digit.size() & 1) return false;
+    int sum_1 = 0;
+    int sum_2 = 0;
+    for (int i  = 0; i < digit.size()/2; i++)
+    {
+        sum_1 += digit[i];
+        sum_2 += digit[digit.size()/2 + i];
+    }
+    return (sum_1 == sum_2);
+}
+
+bool NiceInteger::is_automorph(int arg)
+{
+    int s = value;
+    for (int i = 1; i < arg; i++)
+    {
+        s *= value;
+    }
+
+    NiceInteger *t_int = new  NiceInteger(s);
+
+    for (int i = 0; i < digit.size(); i++)
+    {
+        if (digit[digit.size() - 1 - i] != t_int->digit[digit.size() - 1 - i])
+        {
+            delete t_int;
+            return false;
+        }
+    }
+    delete t_int;
+    return true;
+}
+
+bool NiceInteger::is_perfect()
+{
+    uint sum = 1;
+    for (int i = 0; i < div.size()-1;i++)
+    {
+        if (value % div[i] == 0) 
+            sum += div[i];
+    }
+    return (sum == value);
+}
+
+bool NiceInteger::is_symmetric()
+{
+    if (digit.size() & 1) return false;
+    for (int i  = 0; i < digit.size()/2; i++)
+    {
+        if (digit[i] != digit[digit.size()/2 + i])
+            return false;
+    }
+    return true;
+}
+
+bool NiceInteger::palindrome()
+{
+    for (int i = 0; i < digit.size(); i++)
+    {
+        if (digit[i] != digit[digit.size()-i-1])    return false;
+    }
+    return true;
+}
+
+// 456 4 + 5 + 6 = 15 1 + 5 = 6 
+
 int main ()
 {
-    for (int i = 3; i <= 999 - 2; i+=2)
+    // 1 - 10000
+    NiceInteger *j;
+    for (int i = 100000; i <= 199999; i++)
     {
-        if (check_prime(i) && check_prime(i+2))
-            cout << i << ", " << i+2 << endl;
+        j = new NiceInteger(i);
+        if (j->palindrome() && j->is_symmetric())
+            cout  << i << endl;
+        delete j;
     }
     return 0;
 }
