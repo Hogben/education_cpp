@@ -381,6 +381,17 @@ bool NiceInteger::palindrome()
 
 // 456 4 + 5 + 6 = 15 1 + 5 = 6 
 
+bool NiceInteger::is_cube(int arg)
+{
+    int sum = 0;
+    int s = value;
+    for (int i = 0; i < digit.size(); i++)
+    {
+        sum += digit[i] * digit[i] * digit[i];
+    }
+    if (sum == s) return true;
+    return false;
+}
 int main ()
 {
     // 1 - 10000
