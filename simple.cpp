@@ -215,10 +215,6 @@ int main ()
     }
     return 0;
 }
-/*/
-//Два нечетных простых числа, отличающиеся на 2, называются близнецами. Например, числа 5 и 7. 
-//Напишите программу, которая будет находить все числа-близнецы на отрезке [2; 1000].
-
 
 bool check_prime(int arg)
 {
@@ -230,7 +226,7 @@ bool check_prime(int arg)
     }
     return res;
 }
-
+/*/
 
 class NiceInteger
 {
@@ -252,11 +248,27 @@ class NiceInteger
         int  value_by_base(int);
         int  root();
         bool happy_ticket();
+        bool is_cube();
         vector<int> div;
         vector<int> digit;
-    protected:
+        bool is_not_repeat();
         int value;
 };
+
+bool NiceInteger::is_not_repeat()
+{
+    int _digit[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    for (int i : digit)
+    {
+        _digit[i]++;
+    }
+    for (int i = 0; i < 10; i++)
+    {
+        if (_digit[i] > 1)
+            return false;
+    }
+    return true;
+}
 
 int  NiceInteger::root()
 {
@@ -381,7 +393,7 @@ bool NiceInteger::palindrome()
 
 // 456 4 + 5 + 6 = 15 1 + 5 = 6 
 
-bool NiceInteger::is_cube(int arg)
+bool NiceInteger::is_cube()
 {
     int sum = 0;
     int s = value;
@@ -392,16 +404,79 @@ bool NiceInteger::is_cube(int arg)
     if (sum == s) return true;
     return false;
 }
-int main ()
+
+int _digit[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
+void clear_digit()
 {
-    // 1 - 10000
+    for (int i = 0; i < 10; i++)
+        _digit[i] = 0;
+}
+
+void calc_book_number(int arg)
+{
+    int t_int = arg;
     NiceInteger *j;
-    for (int i = 100000; i <= 199999; i++)
+    clear_digit();
+    for (int i = 1; i <= arg; i++)
     {
         j = new NiceInteger(i);
-        if (j->palindrome() && j->is_symmetric())
-            cout  << i << endl;
+        for (int k : j->digit)
+        {
+            _digit[k]++;
+        }
         delete j;
     }
-    return 0;
+}
+
+void full_square()
+{
+    NiceInteger *j;
+
+    int x = 13;
+
+    while (x*x <= 98765432)
+    {
+        j = new NiceInteger(x*x);
+        if (j->is_not_repeat())
+            cout << j->value << endl;
+        x++;
+    }  
+}
+
+void print_digit()
+{
+    for (int i = 0; i < 10; i++)
+    {
+        cout << i << "  ==> " << _digit[i] << endl;   
+    }
+}
+
+//Б. Кордемский указывает одно интересное число 145, которое равно сумме факториалов своих цифр: 145=1!+4!+5!
+//. Он пишет, что неизвестно, есть ли еще такие числа, удовлетворяющие названному условию. Помогите найти все такие числа.
+// до 1000000
+
+int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
+
+void is_interesting()
+{
+    int sum = 0;
+    NiceInteger *j;
+    for (int i = 1; i < 1000000; i++)
+    {
+        sum = 0;
+        j = new NiceInteger(i);
+        for (int k : j->digit)
+        {
+            sum += _fact[k];
+        }
+        if (sum == j->value)
+            cout << i << endl;
+    }
+    
+}
+
+int main ()
+{
+    is_interesting();
 }
