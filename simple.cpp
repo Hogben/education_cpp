@@ -53,7 +53,7 @@ int main()
     {
         v_t.clear();
         cout << "Enter values: " << endl;
-        cin >> S;
+        cin >> S;https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
 
         if (S == 0 )   break;
 
@@ -109,7 +109,7 @@ int main()
 struct days
 {
     int first_day;
-    int last_day;
+    int last_day;https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
 };
 
 
@@ -140,7 +140,7 @@ int main()
                     mas[i][k] = 0;
                 else
                     mas[i][k] = 1;
-            }
+            }https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
         }
         int t_max = 1;
         int t_sum = 0;
@@ -169,7 +169,7 @@ void find_del(uint arg)
     del.push_back(arg);
     del.push_back(1);
     for (int i = 2; i <= arg/2; i++)
-    {
+    {https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
         if (arg % i == 0) del.push_back(i);
     }
 }
@@ -253,7 +253,20 @@ class NiceInteger
         vector<int> digit;
         bool is_not_repeat();
         int value;
+        int make_int(vector<int> &);
 };
+
+int NiceInteger::make_int(vector<int> &arg)
+{
+    int res = 0;
+    int multi = 1;
+    for (int i : arg)
+    {
+        res += i * multi;
+        multi *= 10;
+    }
+    return res;
+}
 
 bool NiceInteger::is_not_repeat()
 {
@@ -452,31 +465,73 @@ void print_digit()
     }
 }
 
-//Б. Кордемский указывает одно интересное число 145, которое равно сумме факториалов своих цифр: 145=1!+4!+5!
-//. Он пишет, что неизвестно, есть ли еще такие числа, удовлетворяющие названному условию. Помогите найти все такие числа.
-// до 1000000
-
 int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
 
-void is_interesting()
+
+//Преобразовать простую дробь в десятичную. Если дробь окажется периодической, то период указать в скобках. 
+//Период искать в первых 100 цифрах
+void decimal()
 {
-    int sum = 0;
-    NiceInteger *j;
-    for (int i = 1; i < 1000000; i++)
+    vector<int> p;
+    int denominator;
+    int numerator;
+    int remain;
+    cout << "numerator: ";
+    cin >> numerator; 
+    cout << endl <<"denomunator: ";
+    cin >> denominator;
+    cout << numerator/denominator << ",";
+    for (int i = 0; i < 100; i++)
     {
-        sum = 0;
-        j = new NiceInteger(i);
-        for (int k : j->digit)
+        remain = numerator % denominator;
+        if (remain == 0) break;
+        remain *=10;
+        while (remain < denominator)      
         {
-            sum += _fact[k];
-        }
-        if (sum == j->value)
-            cout << i << endl;
+            cout << "0";
+            p.push_back(0);
+            remain *=10;
+        }        
+        numerator = remain; 
+        cout << numerator/denominator;
     }
-    
+    cout << endl;
+}
+
+void is_interesting(int arg)
+{
+    vector<int> t_v;
+    NiceInteger * n;
+    int multi = 10;
+    int t_int;
+    bool run = true;
+    while (run)
+    {
+        t_int = arg * multi + 1;
+        
+        for (int j = t_int; j < t_int + multi; j++)   
+        {
+            t_v.clear();
+            n = new NiceInteger(j);
+            t_v.push_back(arg);
+            for (int i = 0; i < n->digit.size() - 1; i++) 
+            {
+                t_v.push_back(n->digit[i]);
+            }       
+            cout << j << " " << n->make_int(t_v) << endl;
+            if (n->make_int(t_v) * arg == j)
+            {
+                run = false;
+                cout << j << endl;
+                break;
+            }
+        }
+        multi *= 10;
+        delete n;
+    }
 }
 
 int main ()
 {
-    is_interesting();
+    decimal();
 }
