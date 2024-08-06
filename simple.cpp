@@ -494,9 +494,41 @@ void decimal()
         }        
         numerator = remain; 
         cout << numerator/denominator;
+        p.push_back(numerator/denominator);
+    }
+    //-------------- search period ???
+
+    cout << endl;
+}
+
+void format_text(string arg_s, int arg_count)
+{
+    int count = 0;
+    int w_count = 1;
+    for (char c : arg_s)
+    {
+        if (c == ' '  || c == '\n')
+        {
+            count++;
+            if (count == w_count)
+            {
+                count = 0;
+                w_count++;
+                if (w_count > arg_count)
+                {
+                    w_count = 1;
+                }
+                cout << endl;
+            }   
+            else
+                cout << ' ';
+        }
+        else
+            cout << c;
     }
     cout << endl;
 }
+
 
 void is_interesting(int arg)
 {
@@ -531,7 +563,57 @@ void is_interesting(int arg)
     }
 }
 
+//Дан массив, элементы которого содержат фио и номер группы студента. 
+//Упорядочить массив по номерам групп так, чтобы в рамках одной группы студенты были упорядочены по алфавиту.
+
+struct student
+{
+    int number;
+    string fio;
+};
+
+vector<student> stdnt;
+vector<string> v_std;
+vector<student> result;
+
 int main ()
 {
-    decimal();
+    stdnt.push_back({1, "Zakaev"});
+    stdnt.push_back({1, "Ivanov"});
+    stdnt.push_back({1, "Petrov"});
+    stdnt.push_back({2, "Mironov"});
+    stdnt.push_back({4, "Sidorov"});
+    stdnt.push_back({3, "Romanovich"});
+    stdnt.push_back({5, "Abramov"});
+    stdnt.push_back({5, "Dyagilev"});
+    stdnt.push_back({3, "Ivanov"});
+    
+    sort(stdnt.begin(), stdnt.end(), [](auto a, auto b) { return (a.number < b.number); } );
+    int t_num = stdnt.begin()->number; 
+    for (auto r : stdnt)
+    {
+        if (r.number != t_num)
+        {
+            sort( v_std.begin(), v_std.end());
+            for (auto j : v_std)
+            {
+                result.push_back({t_num, j});
+            }
+            t_num = r.number;
+            v_std.clear();
+        }
+        v_std.push_back(r.fio);
+    }
+
+    if (v_std.size() > 0)
+    {
+        for (auto j : v_std)
+        {
+            result.push_back({t_num, j});
+        }
+    }
+
+    for (auto s : result)
+        cout << s.number << ": " << s.fio << endl;
 }
+
