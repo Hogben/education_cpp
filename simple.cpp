@@ -414,7 +414,7 @@ bool NiceInteger::is_automorph(int arg)
 {
     int s = value;
     for (int i = 1; i < arg; i++)
-    {   
+    {
         s *= value;
     }
 
@@ -425,7 +425,13 @@ bool NiceInteger::is_automorph(int arg)
         if (digit[digit.size() - 1 - i] != t_int->digit[digit.size() - 1 - i])
         {
             delete t_int;
-            return false;cout
+            return false;
+        }
+    }
+    delete t_int;
+    return true;
+}
+
 bool NiceInteger::is_perfect()
 {
     uint sum = 1;
@@ -500,25 +506,21 @@ void full_square()
     NiceInteger *j;
 
     int x = 13;
-cout
+
     while (x*x <= 98765432)
     {
         j = new NiceInteger(x*x);
         if (j->is_not_repeat())
-            cout << j->value << endl;                cout << endl;
-
-    for (int i = 0; i < 10; i++)
-    {
-        cout << i << "  ==> " << _digit[i] << endl;   
-    }
+            cout << j->value << endl;
+        x++;
+    }  
 }
 
 int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
 
-
 void format_text(string arg_s, int arg_count)
 {
-    int count = 0;cout
+    int count = 0;
     int w_count = 1;
     for (char c : arg_s)
     {
