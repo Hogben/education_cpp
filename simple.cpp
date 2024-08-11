@@ -53,7 +53,7 @@ int main()
     {
         v_t.clear();
         cout << "Enter values: " << endl;
-        cin >> S;https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
+        cin >> S;
 
         if (S == 0 )   break;
 
@@ -109,7 +109,7 @@ int main()
 struct days
 {
     int first_day;
-    int last_day;https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
+    int last_day;
 };
 
 
@@ -140,7 +140,7 @@ int main()
                     mas[i][k] = 0;
                 else
                     mas[i][k] = 1;
-            }https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
+            }
         }
         int t_max = 1;
         int t_sum = 0;
@@ -169,7 +169,7 @@ void find_del(uint arg)
     del.push_back(arg);
     del.push_back(1);
     for (int i = 2; i <= arg/2; i++)
-    {https://prod.liveshare.vsengsaas.visualstudio.com/join?E8387911EC0B7C2844A2BA4F4FBADE7A59BF
+    {
         if (arg % i == 0) del.push_back(i);
     }
 }
@@ -254,7 +254,66 @@ class NiceInteger
         bool is_not_repeat();
         int value;
         int make_int(vector<int> &);
+        string make_rome_number();
 };
+
+string NiceInteger::make_rome_number()
+{
+    /*/
+    1 = I
+    5 = V
+    10 = X
+    50 = L
+    100 = C
+    500 = D
+    1000 = M
+    
+    9  = IX
+    14 = XIV
+    602 = DCII
+
+    902 = CMII
+    /*/
+    stringstream t_str;
+
+    if (digit.size() > 3)
+    {
+        for (int i = 0; i < value / 1000; i++)  t_str << "M";
+    }
+    if (digit[2] > 0)
+    {
+        switch (digit[2])
+        {
+            case 1:
+                t_str << "C";
+                break;
+            case 2:
+                t_str << "CC";
+                break;
+            case 3:
+                t_str << "CCC";
+                break;
+            case 4:
+                t_str << "CD";
+                break;
+            case 5:
+                t_str << "D";
+                break;
+            case 6:
+                t_str << "DC";
+                break;
+            case 7:
+                t_str << "DCC";
+                break;
+            case 8:
+                t_str << "DCCC";
+                break;
+            case 9:
+                t_str << "CM";
+                break;
+        }
+    }
+}
 
 int NiceInteger::make_int(vector<int> &arg)
 {
@@ -267,7 +326,7 @@ int NiceInteger::make_int(vector<int> &arg)
     }
     return res;
 }
-
+   
 bool NiceInteger::is_not_repeat()
 {
     int _digit[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -331,7 +390,7 @@ void NiceInteger::fill_digit()
         digit.push_back(0);
         return;
     }
-    while (t_int > 0)
+    while (t_int > 0)   
     {
         digit.push_back(t_int % 10);
         t_int /= 10;
@@ -355,7 +414,7 @@ bool NiceInteger::is_automorph(int arg)
 {
     int s = value;
     for (int i = 1; i < arg; i++)
-    {
+    {   
         s *= value;
     }
 
@@ -366,13 +425,7 @@ bool NiceInteger::is_automorph(int arg)
         if (digit[digit.size() - 1 - i] != t_int->digit[digit.size() - 1 - i])
         {
             delete t_int;
-            return false;
-        }
-    }
-    delete t_int;
-    return true;
-}
-
+            return false;cout
 bool NiceInteger::is_perfect()
 {
     uint sum = 1;
@@ -447,18 +500,13 @@ void full_square()
     NiceInteger *j;
 
     int x = 13;
-
+cout
     while (x*x <= 98765432)
     {
         j = new NiceInteger(x*x);
         if (j->is_not_repeat())
-            cout << j->value << endl;
-        x++;
-    }  
-}
+            cout << j->value << endl;                cout << endl;
 
-void print_digit()
-{
     for (int i = 0; i < 10; i++)
     {
         cout << i << "  ==> " << _digit[i] << endl;   
@@ -468,42 +516,9 @@ void print_digit()
 int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
 
 
-//Преобразовать простую дробь в десятичную. Если дробь окажется периодической, то период указать в скобках. 
-//Период искать в первых 100 цифрах
-void decimal()
-{
-    vector<int> p;
-    int denominator;
-    int numerator;
-    int remain;
-    cout << "numerator: ";
-    cin >> numerator; 
-    cout << endl <<"denomunator: ";
-    cin >> denominator;
-    cout << numerator/denominator << ",";
-    for (int i = 0; i < 100; i++)
-    {
-        remain = numerator % denominator;
-        if (remain == 0) break;
-        remain *=10;
-        while (remain < denominator)      
-        {
-            cout << "0";
-            p.push_back(0);
-            remain *=10;
-        }        
-        numerator = remain; 
-        cout << numerator/denominator;
-        p.push_back(numerator/denominator);
-    }
-    //-------------- search period ???
-
-    cout << endl;
-}
-
 void format_text(string arg_s, int arg_count)
 {
-    int count = 0;
+    int count = 0;cout
     int w_count = 1;
     for (char c : arg_s)
     {
@@ -552,7 +567,8 @@ void is_interesting(int arg)
             }       
             cout << j << " " << n->make_int(t_v) << endl;
             if (n->make_int(t_v) * arg == j)
-            {
+            {                cout << endl;
+
                 run = false;
                 cout << j << endl;
                 break;
@@ -572,48 +588,119 @@ struct student
     string fio;
 };
 
-vector<student> stdnt;
-vector<string> v_std;
-vector<student> result;
+//Преобразовать простую дробь в десятичную. Если дробь окажется периодической, то период указать в скобках. 
+//Период искать в первых 100 цифрах
+vector<int> p;
+vector<int> per;
+vector<int> t_per;
+
+void copy_vect(vector<int> &src, vector<int> &trg)
+{
+    trg.clear();
+    cout << endl;
+    for (int i = 0; i < src.size(); i++)   
+    {
+        trg.push_back(src[i]);
+        cout << src[i];
+    }
+    cout << endl;
+}    
+
+bool check_per(int &i, int  &per_check, int count)
+{
+    bool find = true;
+    if (count > 0)
+    {
+        find = true;
+        for (int j = 0; j < count; j++)
+        {
+            if (p[i - count + j] != per[j])
+            {
+                find = false;
+                break;
+            }
+        }
+        if (find)
+            per_check++;
+        else
+        {
+            per_check = 0;     
+            copy_vect(t_per, per);
+        }
+    }
+    else
+    {
+        copy_vect(t_per, per);
+    }
+    return find;
+}
+
+void decimal()
+{
+    int denominator;
+    int numerator;
+    int remain;
+    cout << "numerator: ";
+    cin >> numerator; 
+    cout << endl <<"denomunator: ";
+    cin >> denominator;
+    cout << numerator/denominator << ",";
+
+    int per_size = 1;
+
+    for (int i = 0; i < 100; i++)
+    {
+        remain = numerator % denominator;
+        if (remain == 0) break;
+        remain *=10;
+        while (remain < denominator)      
+        {
+            cout << "0";
+            p.push_back(0);
+            remain *=10;
+            i++;
+        }        
+        numerator = remain; 
+        cout << numerator/denominator;
+        p.push_back(numerator/denominator);
+    }
+    //-------------- search period ???
+
+    int idx = 0;
+
+    per.clear();
+    bool find = false;
+
+    int per_check = 0;
+    int i;
+
+    t_per.push_back(p[0]);
+
+    for (i = 1; i < p.size(); i++)
+    {
+        if (p[i] == t_per[0])
+        {   
+            idx = i - per.size();
+            check_per(i, per_check, per.size());
+            per_size = per.size();
+        }
+        t_per.push_back(p[i]);
+    }
+
+    if (per_check > 0 && check_per(i, per_check, i - (idx + per.size())))
+    {
+        cout << endl << "find period(" << per.size() << "): ";
+        for (int a : per)
+            cout << a;
+    }
+    else
+        cout << endl << "not period";
+
+    cout << endl;
+}
 
 int main ()
 {
-    stdnt.push_back({1, "Zakaev"});
-    stdnt.push_back({1, "Ivanov"});
-    stdnt.push_back({1, "Petrov"});
-    stdnt.push_back({2, "Mironov"});
-    stdnt.push_back({4, "Sidorov"});
-    stdnt.push_back({3, "Romanovich"});
-    stdnt.push_back({5, "Abramov"});
-    stdnt.push_back({5, "Dyagilev"});
-    stdnt.push_back({3, "Ivanov"});
-    
-    sort(stdnt.begin(), stdnt.end(), [](auto a, auto b) { return (a.number < b.number); } );
-    int t_num = stdnt.begin()->number; 
-    for (auto r : stdnt)
-    {
-        if (r.number != t_num)
-        {
-            sort( v_std.begin(), v_std.end());
-            for (auto j : v_std)
-            {
-                result.push_back({t_num, j});
-            }
-            t_num = r.number;
-            v_std.clear();
-        }
-        v_std.push_back(r.fio);
-    }
-
-    if (v_std.size() > 0)
-    {
-        for (auto j : v_std)
-        {
-            result.push_back({t_num, j});
-        }
-    }
-
-    for (auto s : result)
-        cout << s.number << ": " << s.fio << endl;
+    decimal();        
 }
 
