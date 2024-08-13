@@ -306,7 +306,7 @@ string NiceInteger::make_rome_number()
                 t_str << "DCC";
                 break;
             case 8:
-                t_str << "DCCC";
+                t_str << "CCM";
                 break;
             case 9:
                 t_str << "CM";
