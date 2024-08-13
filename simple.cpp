@@ -8,6 +8,7 @@
 #include <thread>
 #include <stdlib.h>
 #include <cmath>
+#include <map>
 
 using namespace std;
 
@@ -76,10 +77,7 @@ int main()
 
         sort (v_t.begin(), v_t.end(), [](auto a, auto b) {return a.S < b.S;});
 
-        //for (auto i : v_t) cout << i.a << ", " << i.b << ", " << i.c << ", " << i.S/2 << endl;
-
-
-        int t_S = v_t.cbegin()->S;
+        //for (auto i : v_t) cout << i.a << "Написать программу для кодирования данного текста с помощью азбуки Морзе
 
         for (auto i : v_t)        
         {
@@ -313,6 +311,40 @@ string NiceInteger::make_rome_number()
                 break;
         }
     }
+    if (digit[0] > 0)
+    {
+        switch (digit[0])
+        {
+            case 1:
+                t_str << "I";
+                break;
+            case 2:
+                t_str << "II";
+                break;
+            case 3:
+                t_str << "III";
+                break;
+            case 4:
+                t_str << "IV";
+                break;
+            case 5:
+                t_str << "V";
+                break;
+            case 6:
+                t_str << "VI";
+                break;
+            case 7:
+                t_str << "VII";
+                break;
+            case 8:
+                t_str << "IIX";
+                break;
+            case 9:
+                t_str << "IX";
+                break;
+        }
+    }
+    return t_str.str();
 }
 
 int NiceInteger::make_int(vector<int> &arg)
@@ -399,7 +431,6 @@ void NiceInteger::fill_digit()
 
 bool NiceInteger::happy_ticket()
 {
-    if (digit.size() & 1) return false;
     int sum_1 = 0;
     int sum_2 = 0;
     for (int i  = 0; i < digit.size()/2; i++)
@@ -450,15 +481,6 @@ bool NiceInteger::is_symmetric()
     {
         if (digit[i] != digit[digit.size()/2 + i])
             return false;
-    }
-    return true;
-}
-
-bool NiceInteger::palindrome()
-{
-    for (int i = 0; i < digit.size(); i++)
-    {
-        if (digit[i] != digit[digit.size()-i-1])    return false;
     }
     return true;
 }
@@ -545,8 +567,7 @@ void format_text(string arg_s, int arg_count)
     }
     cout << endl;
 }
-
-
+/*/
 void is_interesting(int arg)
 {
     vector<int> t_v;
@@ -557,9 +578,6 @@ void is_interesting(int arg)
     while (run)
     {
         t_int = arg * multi + 1;
-        
-        for (int j = t_int; j < t_int + multi; j++)   
-        {
             t_v.clear();
             n = new NiceInteger(j);
             t_v.push_back(arg);
@@ -569,8 +587,8 @@ void is_interesting(int arg)
             }       
             cout << j << " " << n->make_int(t_v) << endl;
             if (n->make_int(t_v) * arg == j)
-            {                cout << endl;
-
+            {               
+                 cout << endl;
                 run = false;
                 cout << j << endl;
                 break;
@@ -580,10 +598,7 @@ void is_interesting(int arg)
         delete n;
     }
 }
-
-//Дан массив, элементы которого содержат фио и номер группы студента. 
-//Упорядочить массив по номерам групп так, чтобы в рамках одной группы студенты были упорядочены по алфавиту.
-
+/*/
 struct student
 {
     int number;
@@ -596,6 +611,15 @@ vector<int> p;
 vector<int> per;
 vector<int> t_per;
 
+bool new_per = true;
+
+void print_vect(vector<int> &v)
+{
+    for (int i : v)
+            cout << i;
+    cout << endl;
+}
+
 void copy_vect(vector<int> &src, vector<int> &trg)
 {
     trg.clear();
@@ -603,7 +627,6 @@ void copy_vect(vector<int> &src, vector<int> &trg)
     for (int i = 0; i < src.size(); i++)   
     {
         trg.push_back(src[i]);
-        cout << src[i];
     }
     cout << endl;
 }    
@@ -623,7 +646,9 @@ bool check_per(int &i, int  &per_check, int count)
             }
         }
         if (find)
+        {
             per_check++;
+        }
         else
         {
             per_check = 0;     
@@ -635,6 +660,48 @@ bool check_per(int &i, int  &per_check, int count)
         copy_vect(t_per, per);
     }
     return find;
+}
+
+bool mega_check_per(int index)
+{
+    bool rez = true;
+    int idx = index;
+
+    per.clear();
+    bool find = false;
+
+    int per_check = 0;
+    int i;
+
+    new_per = true;
+    t_per.clear();
+    t_per.push_back(p[index]);
+
+    for (i = index+1; i < p.size(); i++)
+    {
+        if (p[i] == t_per[0])
+        {   
+            if (new_per)
+            {
+                idx = i - per.size();
+                rez = check_per(i, per_check, per.size());
+            }
+            new_per = false;
+        }
+        else
+            new_per = true;
+        t_per.push_back(p[i]);
+    }
+
+    if (per_check > 0 && check_per(i, per_check, i - (idx + per.size())))
+    {
+        rez = true;
+    }
+    else
+    {
+        rez = false;
+    }
+    return rez;
 }
 
 void decimal()
@@ -667,29 +734,16 @@ void decimal()
         p.push_back(numerator/denominator);
     }
     //-------------- search period ???
+    int begin_idx = 0;
 
-    int idx = 0;
-
-    per.clear();
-    bool find = false;
-
-    int per_check = 0;
-    int i;
-
-    t_per.push_back(p[0]);
-
-    for (i = 1; i < p.size(); i++)
-    {
-        if (p[i] == t_per[0])
-        {   
-            idx = i - per.size();
-            check_per(i, per_check, per.size());
-            per_size = per.size();
-        }
-        t_per.push_back(p[i]);
+    bool rez = false;
+    while(rez  != true && begin_idx < 97)
+    {   
+        rez = mega_check_per(begin_idx);
+        begin_idx++;
     }
 
-    if (per_check > 0 && check_per(i, per_check, i - (idx + per.size())))
+    if (rez)
     {
         cout << endl << "find period(" << per.size() << "): ";
         for (int a : per)
@@ -700,9 +754,111 @@ void decimal()
 
     cout << endl;
 }
+//Написать программу для кодирования данного текста с помощью азбуки Морзе
+map<char, string> morse;
+
+void fill_code()
+{
+    morse.insert({'A', ".-"});
+    morse.insert({'B', "-..."});
+    morse.insert({'C', "-.-."});
+    morse.insert({'D', "-.."});
+    morse.insert({'E', "."});
+    morse.insert({'F', "..-."});
+    morse.insert({'G', "--."});
+    morse.insert({'H', "...."});
+    morse.insert({'I', ".."});
+    morse.insert({'J', ".---"});
+    morse.insert({'K', "-.-"});
+    morse.insert({'L', ".-.."});
+    morse.insert({'M', "--"});
+    morse.insert({'N', "-."});
+    morse.insert({'O', "---"});
+    morse.insert({'P', ".--."});
+    morse.insert({'Q', "--.-"});
+    morse.insert({'R', ".-."});
+    morse.insert({'S', "..."});
+    morse.insert({'T', "-"});
+    morse.insert({'U', "..-"});
+    morse.insert({'V', "...-"});
+    morse.insert({'W', ".--"});
+    morse.insert({'X', "-..-"});
+    morse.insert({'Y', "-.--"});
+    morse.insert({'Z', "--.."});
+} 
+
+string make_morse(string arg)
+{
+    stringstream t_str;
+    for (char i : arg)
+    {
+        if (i == ' ')
+        {
+            t_str << endl;
+        }
+        else
+        {
+            t_str << morse.at(i) << " ";
+        }
+    }
+    return t_str.str();
+}
+
+//Два игрока по очереди выбирают по одному целому числу из отрезка [1; 10]. 
+//Все выбранные числа складываются. Игра продолжается до тех пор, пока вся сумма не станет равной 100. 
+//Выигрывает тот, кто сделал последний ход. 
+//Напишите программу для игры с компьютером. 
+//Компьютер должен придерживаться выигрышной стратегии, если она существует.
+
+void the_game()
+{
+    int sum = 0;
+    int a = 0;
+    
+    bool people_win = true;
+
+    while (sum != 100)
+    {
+        while (a < 1 || a > 10)  cin >> a;
+        
+        sum += a;
+        if (sum == 100)
+           break;
+
+        cout << "sum: " << sum << endl;
+
+        if (100 - sum <= 10)
+            a = 100 - sum;
+        else
+        {
+            a = 9-(sum % 10);
+            if (a == 0)
+            {
+                if  (!((sum / 10) & 1))
+                    a = randint(1, 9);
+                else
+                    a = 10;
+            }
+        }
+        //            a = randint(1, 10);
+        sum += a;
+        
+        cout << "sum: " << sum << endl;
+        if (sum == 100)
+            people_win = false;
+
+        a = 0;
+    }
+    cout << (people_win ?  "You" : "Computer");
+    cout << " win" << endl;
+}
 
 int main ()
 {
-    decimal();        
+    /*/fill_code();        
+    cout << make_morse("MARRY I WONNA TO HATE U");
+    cout << endl;  
+    /*/
+    the_game();
 }
 
