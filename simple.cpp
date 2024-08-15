@@ -583,7 +583,7 @@ void is_interesting(int arg)
             t_v.push_back(arg);
             for (int i = 0; i < n->digit.size() - 1; i++) 
             {
-                t_v.push_back(n->digit[i]);
+                t_v.push_backcout(n->digit[i]);
             }       
             cout << j << " " << n->make_int(t_v) << endl;
             if (n->make_int(t_v) * arg == j)
@@ -770,9 +770,6 @@ void fill_code()
     morse.insert({'I', ".."});
     morse.insert({'J', ".---"});
     morse.insert({'K', "-.-"});
-    morse.insert({'L', ".-.."});
-    morse.insert({'M', "--"});
-    morse.insert({'N', "-."});
     morse.insert({'O', "---"});
     morse.insert({'P', ".--."});
     morse.insert({'Q', "--.-"});
@@ -853,12 +850,193 @@ void the_game()
     cout << " win" << endl;
 }
 
+void hanoy(int disk, int src, int trg, int temp)
+{
+    if (disk == 1)
+    {
+        cout << "move " << src << " => " << trg << endl;
+    }
+    else
+    {
+        hanoy (disk - 1, src, temp, trg);
+        cout << "move " << src << " => " << trg << endl;
+        hanoy (disk - 1, temp, trg, src);
+    }
+}
+
+//Определить, можно ли расставить восемь ферзей на шахматной доске так, чтобы никакие два из них не угрожали друг другу.
+int desk[8][8] = 
+{
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0, 0}
+};
+
+int queen[8][2] = 
+{
+    {0, 0},   
+    {0, 0},   
+    {0, 0},   
+    {0, 0},   
+    {0, 0},   
+    {0, 0},   
+    {0, 0},   
+    {0, 0}
+};
+
+void clear_desk()
+{
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+            desk[i][j] = 0;
+    }
+}
+
+int sum_diag(int idx)
+{
+    int rez = 0;
+
+    int x = queen[idx][0];
+    int y = queen[idx][1];
+
+    while (x < 8 && y < 8)
+    {
+            rez += desk[x+1][y+1];
+            y++;
+            x++;
+    }    
+
+    x = queen[idx][0];
+    y = queen[idx][1];
+
+    while (x > 0 && y > 0)
+    {
+        rez += desk[x-1][y-1];
+        y--;
+        x--;
+    }    
+
+    x = queen[idx][0];
+    y = queen[idx][1];
+
+    while (x < 8 && y > 0) 
+    {
+        rez += desk[x+1][y-1];
+        y--;
+        x++;
+    }    
+
+    x = queen[idx][0];
+    y = queen[idx][1];
+
+    while (x > 0 && y < 8)
+    {
+        rez += desk[x-1][y+1];
+        y++;
+        x--;
+    }    
+
+    cout << rez << endl;
+    return rez;
+}
+
+void set_desk()
+{
+    clear_desk();
+    
+    for (int i = 0; i < 8; i++)
+    {
+        desk[queen[i][0]][queen[i][1]] = 1;
+    }
+}
+
+bool check_desk()
+{
+    for (int i = 0; i < 7; i++)
+    {
+        for (int j = i+1; j < 8; j++)
+        if (queen[i][0] == queen[j][0] && queen[i][1] == queen[j][1])
+        {
+            cout << "wrong x, y" << endl;
+            return false;
+        }
+    }
+
+    set_desk();
+    int sum;
+
+    for (int i = 0; i < 8; i++)
+    {
+        sum = 1;
+        for (int j = 0; j < 8; j++)
+        {
+            if ((i == queen[i][0] && j == queen[i][1]) || (j == queen[i][0] && i == queen[i][1]))   continue;
+
+            cout << i << "," << j << " ==> " << desk[j][queen[i][1]] << "   " << desk[queen[i][0]][j] << endl;
+
+            sum += desk[j][queen[i][1]];
+            sum += desk[queen[i][0]][j];
+            sum += sum_diag(i);
+            cout << sum << endl;
+            //----- need check diag
+            if (sum > 1)    return false;
+        }
+    }
+
+    return true;
+}
+
 int main ()
 {
-    /*/fill_code();        
-    cout << make_morse("MARRY I WONNA TO HATE U");
-    cout << endl;  
-    /*/
-    the_game();
+    for (int i = 0; i < 8; i++) 
+    {
+        queen[i][0] = i;
+        queen[i][1] = i;
+    }
+
+    queen[0][0] = 0;    
+    queen[0][1] = 6;    
+
+    queen[1][0] = 1;    
+    queen[1][1] = 3;    
+
+    queen[2][0] = 2;    
+    queen[2][1] = 1;    
+
+    queen[3][0] = 3;    
+    queen[3][1] = 7;    
+
+    queen[4][0] = 4;    
+    queen[4][1] = 5;    
+
+    queen[5][0] = 5;    
+    queen[5][1] = 0;    
+
+    queen[6][0] = 6;    
+    queen[6][1] = 2;    
+
+    queen[7][0] = 7;    
+    queen[7][1] = 4;    
+
+    set_desk();
+
+    for (int i = 0; i < 8; i++)
+    {
+        for (int j = 0; j < 8; j++)
+        {
+            cout << ((desk[i][j] == 1) ? "#" : ".") << " ";
+        }
+        cout << endl;
+    }
+    cout << endl;
+
+
+    cout << (check_desk() ? "Nice" : "Wrong" ) << endl;
 }
 
