@@ -900,12 +900,12 @@ void clear_desk()
 
 int sum_diag(int idx)
 {
-    int rez = 0;
+    int rez = 0;;
 
     int x = queen[idx][0];
     int y = queen[idx][1];
 
-    while (x < 8 && y < 8)
+    while (x < 7 && y < 7)
     {
             rez += desk[x+1][y+1];
             y++;
@@ -925,7 +925,7 @@ int sum_diag(int idx)
     x = queen[idx][0];
     y = queen[idx][1];
 
-    while (x < 8 && y > 0) 
+    while (x < 7 && y > 0) 
     {
         rez += desk[x+1][y-1];
         y--;
@@ -935,14 +935,13 @@ int sum_diag(int idx)
     x = queen[idx][0];
     y = queen[idx][1];
 
-    while (x > 0 && y < 8)
+    while (x > 0 && y < 7)
     {
         rez += desk[x-1][y+1];
         y++;
         x--;
     }    
 
-    cout << rez << endl;
     return rez;
 }
 
@@ -973,19 +972,14 @@ bool check_desk()
 
     for (int i = 0; i < 8; i++)
     {
-        sum = 1;
+        sum = 0;
         for (int j = 0; j < 8; j++)
         {
-            if ((i == queen[i][0] && j == queen[i][1]) || (j == queen[i][0] && i == queen[i][1]))   continue;
-
-            cout << i << "," << j << " ==> " << desk[j][queen[i][1]] << "   " << desk[queen[i][0]][j] << endl;
-
             sum += desk[j][queen[i][1]];
             sum += desk[queen[i][0]][j];
             sum += sum_diag(i);
-            cout << sum << endl;
             //----- need check diag
-            if (sum > 1)    return false;
+            if (sum > 2)    return false;
         }
     }
 
