@@ -5,9 +5,9 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
-#include <thread>
 #include <stdlib.h>
 #include <cmath>
+#include <random>
 #include <map>
 
 using namespace std;
@@ -58,7 +58,15 @@ int main()
 
         if (S == 0 )   break;
 
-        for (int a = 1; a <= S; a++)
+        for (int a = 1;
+ПРОБЛЕМЫ
+ВЫХОДНЫЕ ДАННЫЕ
+КОНСОЛЬ ОТЛАДКИ
+ТЕРМИНАЛ
+ПОРТЫ
+GITLENS
+КОММЕНТАРИИ
+ a <= S; a++)
         {
             for (int b = a; ; b++)
             {
@@ -96,7 +104,15 @@ int main()
             }
         }
     }
-    cout << "ending program..." << endl;
+    cout << "ending pro
+ПРОБЛЕМЫ
+ВЫХОДНЫЕ ДАННЫЕ
+КОНСОЛЬ ОТЛАДКИ
+ТЕРМИНАЛ
+ПОРТЫ
+GITLENS
+КОММЕНТАРИИ
+gram..." << endl;
 
     return 0;
 }
@@ -299,12 +315,6 @@ string NiceInteger::make_rome_number()
                 break;
             case 6:
                 t_str << "DC";
-                break;
-            case 7:
-                t_str << "DCC";
-                break;
-            case 8:
-                t_str << "CCM";
                 break;
             case 9:
                 t_str << "CM";
@@ -945,32 +955,36 @@ int sum_diag(int idx)
     return rez;
 }
 
-void set_desk()
+void set_desk(int idx = 8)
 {
     clear_desk();
     
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < idx; i++)
     {
         desk[queen[i][0]][queen[i][1]] = 1;
     }
 }
 
-bool check_desk()
+bool check_desk(int idx = 8)
 {
-    for (int i = 0; i < 7; i++)
+/*/    
+    for (int i = 0; i < idx - 1; i++)
     {
-        for (int j = i+1; j < 8; j++)
-        if (queen[i][0] == queen[j][0] && queen[i][1] == queen[j][1])
+        for (int j = i+1; j < idx; j++)
         {
-            cout << "wrong x, y" << endl;
-            return false;
+            if (queen[i][0] == queen[j][0] && queen[i][1] == queen[j][1])
+            {
+                cout << "queen count:" << idx << " wrong x, y: "<< endl;
+                return false;
+            }
         }
     }
+/*/
 
-    set_desk();
+    set_desk(idx);
     int sum;
 
-    for (int i = 0; i < 8; i++)
+    for (int i = 0; i < idx; i++)
     {
         sum = 0;
         for (int j = 0; j < 8; j++)
@@ -978,47 +992,90 @@ bool check_desk()
             sum += desk[j][queen[i][1]];
             sum += desk[queen[i][0]][j];
             sum += sum_diag(i);
-            //----- need check diag
             if (sum > 2)    return false;
         }
     }
-
     return true;
 }
 
+vector<int> _y = {0, 1, 2, 3, 4, 5, 6, 7};
+
+unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+default_random_engine rnd(seed);
+
+void my_shuffle(int idx)
+{
+    int t_int;
+    int j;
+
+    for (int i = idx; i < _y.size()-1; i++)
+    {
+        j = randint(i, _y.size()-1);
+        t_int = _y[j];
+        _y[j] = _y[i];
+        _y[i] = t_int;
+    }
+}
+
+
+void fill_y(int idx)
+{
+//    shuffle(_y.begin()+idx, _y.end(), rnd);
+    my_shuffle(idx);
+    
+    cout << idx << ": ";
+    for (int i : _y) cout << i << ", ";
+    cout << endl;
+    
+}
+
+//Обеденный перерыв Гомера Симпсона составляет T мс. 
+//Один гамбургер Гомер съедает за N мс, один чизбургер — за М. 
+//Требуется найти максимальное суммарное  число гамбургеров и чизбургеров, 
+//которые Гомер может съесть в течение обеденного перерыва.
+
+
 int main ()
 {
+    /*/
+    int x;
+    int y;
+
+    int check_count = 0;
+
+    fill_y(0);
+
     for (int i = 0; i < 8; i++) 
     {
-        queen[i][0] = i;
-        queen[i][1] = i;
+        x = i;
+        y = _y[i];
+
+        if (x == y || x == 7-y) 
+        {
+            fill_y(i);            
+            i--;
+            continue;
+        }
+
+        queen[i][0] = x;
+        queen[i][1] = y;
+        
+        if (i > 0)
+        {
+            if (!check_desk(i+1))
+            {
+                check_count++;
+                if (check_count == 20)
+                {
+                    check_count = 0;
+                    i = 1;
+                }
+                fill_y(i);            
+                i--;
+                continue;
+            }
+        }
     }
-
-    queen[0][0] = 0;    
-    queen[0][1] = 6;    
-
-    queen[1][0] = 1;    
-    queen[1][1] = 3;    
-
-    queen[2][0] = 2;    
-    queen[2][1] = 1;    
-
-    queen[3][0] = 3;    
-    queen[3][1] = 7;    
-
-    queen[4][0] = 4;    
-    queen[4][1] = 5;    
-
-    queen[5][0] = 5;    
-    queen[5][1] = 0;    
-
-    queen[6][0] = 6;    
-    queen[6][1] = 2;    
-
-    queen[7][0] = 7;    
-    queen[7][1] = 4;    
-
-    set_desk();
 
     for (int i = 0; i < 8; i++)
     {
@@ -1031,6 +1088,39 @@ int main ()
     cout << endl;
 
 
-    cout << (check_desk() ? "Nice" : "Wrong" ) << endl;
+//    cout << (check_desk() ? "Nice" : "Wrong" ) << endl;
+    cout <<  "Nice" << endl;
+/*/
+    NiceInteger *numerator, *denominator;
+    int  y;
+
+    cout << "Enter denominator: ";
+    cin >> y;
+
+    denominator = new NiceInteger(y);
+
+    bool _out;
+
+    for (int x = 1; x < y; x++)
+    {
+        numerator = new NiceInteger(x);
+        _out = true;        
+        for (int i = 1; i < numerator->div.size(); i++)
+        {
+            for (int j = 1; j < denominator->div.size() - 1; j++)
+            {
+                if (numerator->div[i] == denominator->div[j])   
+                {
+                    _out = false;
+                    break;
+                }
+            }
+            if (!_out)  break;
+        }
+        if (_out) 
+        {
+            cout << x << "/" << y << endl;
+        }
+    }
 }
 
