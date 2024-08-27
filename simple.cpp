@@ -1029,14 +1029,62 @@ void fill_y(int idx)
     
 }
 
-//Обеденный перерыв Гомера Симпсона составляет T мс. 
-//Один гамбургер Гомер съедает за N мс, один чизбургер — за М. 
-//Требуется найти максимальное суммарное  число гамбургеров и чизбургеров, 
-//которые Гомер может съесть в течение обеденного перерыва.
+//Два круга заданы координатами центров в прямоугольной декартовой системе координат и радиусами. 
+//Найти площадь их пересечения.
 
+//Дан список номеров районов области. 
+//Для каждого района известны его соседи. 
+//Разбить все районы на четыре группы так, чтобы соседи не находились в одной группе.
+
+struct Point 
+{
+    int x;
+    int y;
+};
+
+struct FreePoint 
+{
+    double x;
+    double y;
+};
+
+class Circle
+{
+public:
+    Circle(Point cntr, int r) : radius(r), centre(cntr) {}; 
+    Point centre;
+    int radius;
+    double square = radius * radius * M_PI;
+};
+
+double point_distance(Point p1, Point p2)
+{
+    return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
+}
 
 int main ()
 {
+    Circle *cr1;
+    Circle *cr2;
+
+    cr1 = new Circle(Point({1, 2}), 3);
+    cr2 = new Circle(Point({-1, 1}), 2);
+
+    double dist = point_distance(cr1->centre, cr2->centre);
+
+    if (dist < cr1->radius + cr2->radius)
+    {
+        //---- need cacl
+        double d1 = dist - cr2->radius;
+
+    }
+    else
+    {
+        if (dist == cr1->radius + cr2->radius)  cout << "Square: " << 0 << endl;
+        else
+            cout << "Square not avalible." << endl;
+    }
+
     /*/
     int x;
     int y;
@@ -1091,36 +1139,5 @@ int main ()
 //    cout << (check_desk() ? "Nice" : "Wrong" ) << endl;
     cout <<  "Nice" << endl;
 /*/
-    NiceInteger *numerator, *denominator;
-    int  y;
-
-    cout << "Enter denominator: ";
-    cin >> y;
-
-    denominator = new NiceInteger(y);
-
-    bool _out;
-
-    for (int x = 1; x < y; x++)
-    {
-        numerator = new NiceInteger(x);
-        _out = true;        
-        for (int i = 1; i < numerator->div.size(); i++)
-        {
-            for (int j = 1; j < denominator->div.size() - 1; j++)
-            {
-                if (numerator->div[i] == denominator->div[j])   
-                {
-                    _out = false;
-                    break;
-                }
-            }
-            if (!_out)  break;
-        }
-        if (_out) 
-        {
-            cout << x << "/" << y << endl;
-        }
-    }
 }
 
