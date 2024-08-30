@@ -1029,12 +1029,13 @@ void fill_y(int idx)
     
 }
 
-//Два круга заданы координатами центров в прямоугольной декартовой системе координат и радиусами. 
-//Найти площадь их пересечения.
 
-//Дан список номеров районов области. 
-//Для каждого района известны его соседи. 
-//Разбить все районы на четыре группы так, чтобы соседи не находились в одной группе.
+//Напишите программу, позволяющую выполнять арифметические операции 
+//(сложение, разность, умножение, целочисленное деление, нахождение остатка) 
+//и операции сравнения (больше, меньше, равно, не больше, не равно и т.д.) над большими целыми числами.
+
+short n;
+
 
 struct Point 
 {
@@ -1062,29 +1063,151 @@ double point_distance(Point p1, Point p2)
     return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
 }
 
+vector<pair<int, int>> r_num;
+vector<pair<int, int>> neighbors;
+vector<int> r_group[4];
+
+int get_reg_group(int c_reg)
+{
+    int idx = 0;
+    bool find = true;
+
+    vector<int> f_group;
+
+//    while (find)
+    {
+        for (int reg = 1; reg < c_reg; reg++)
+        {
+            for (auto t_neighbors : neighbors)
+            {
+                find = false;
+                if (t_neighbors.first == reg && t_neighbors.second == c_reg)
+                {
+                    f_group.push_back(r_num[reg-1].second);
+                    find = true;
+                    break;
+                }
+            }
+        }
+    }
+//    cout << c_reg << " ==> " << idx << endl;
+    for (auto g : f_group)
+    {
+        if (g == idx)   idx++;
+    }
+
+    return idx;
+}
+
+void string_to_array(string s, vector<short> &v)
+{
+    string t_str;
+    t_str = s;
+    while (t_str.size() > 3)
+    {
+        v.push_back(stoi(t_str.substr(t_str.size()-3, 3)));
+        t_str = t_str.substr(0, t_str.size()-3);
+    }
+    if (t_str.size() > 0)
+    {
+        v.push_back(stoi(t_str));
+    }
+}
+
+string sum(string s1, string s2)
+{
+    stringstream t_str;
+    short separ = 1000;
+    vector<short> n1;
+    vector<short> n2;
+
+    string_to_array(s1, n1);
+    string_to_array(s2, n2);
+
+    return t_str.str();
+}
+
 int main ()
 {
-    Circle *cr1;
-    Circle *cr2;
+    sum ("1234567890123", "39545");
+    /*/
+    int r_count  = 16;
 
-    cr1 = new Circle(Point({1, 2}), 3);
-    cr2 = new Circle(Point({-1, 1}), 2);
+    for (int i = 1; i <= r_count; i++)  r_num.push_back(pair{i,-1});
 
-    double dist = point_distance(cr1->centre, cr2->centre);
+    neighbors.push_back(pair{1,2});
+    neighbors.push_back(pair{1,5});
+    neighbors.push_back(pair{1,6});
+    neighbors.push_back(pair{2,3});
+    neighbors.push_back(pair{2,5});
+    neighbors.push_back(pair{2,6});
+    neighbors.push_back(pair{2,7});
+    neighbors.push_back(pair{3,4});
+    neighbors.push_back(pair{3,6});
+    neighbors.push_back(pair{3,7});
+    neighbors.push_back(pair{3,8});
+    neighbors.push_back(pair{4,7});
+    neighbors.push_back(pair{4,8});
+    neighbors.push_back(pair{5,6});
+    neighbors.push_back(pair{5,9});
+    neighbors.push_back(pair{5,10});
+    neighbors.push_back(pair{6,7});
+    neighbors.push_back(pair{6,9});
+    neighbors.push_back(pair{6,10});
+    neighbors.push_back(pair{6,11});
+    neighbors.push_back(pair{7,8});
+    neighbors.push_back(pair{7,10});
+    neighbors.push_back(pair{7,11});
+    neighbors.push_back(pair{7,12});
+    neighbors.push_back(pair{8,11});
+    neighbors.push_back(pair{8,12});
+    neighbors.push_back(pair{9,10});
+    neighbors.push_back(pair{9,13});
+    neighbors.push_back(pair{9,14});
+    neighbors.push_back(pair{10,11});
+    neighbors.push_back(pair{10,14});
+    neighbors.push_back(pair{10,15});
+    neighbors.push_back(pair{11,12});
+    neighbors.push_back(pair{11,15});
+    neighbors.push_back(pair{11,16});
+    neighbors.push_back(pair{12,16});
+    neighbors.push_back(pair{13,14});
+    neighbors.push_back(pair{14,15});
+    neighbors.push_back(pair{15,16});
+    neighbors.push_back(pair{16, 0});
 
-    if (dist < cr1->radius + cr2->radius)
+    int fill_count = 0;
+    int cur_reg;
+    int cur_idx;
+    for (auto n : neighbors)    
     {
-        //---- need cacl
-        double d1 = dist - cr2->radius;
-
-    }
-    else
-    {
-        if (dist == cr1->radius + cr2->radius)  cout << "Square: " << 0 << endl;
+        if (fill_count == 0)    
+        {
+            fill_count++;
+            r_group[0].push_back(n.first);
+            r_num[n.first-1].second = 0;
+            cur_reg = n.first; 
+            continue;
+        }
+        if (n.first == cur_reg) continue;
         else
-            cout << "Square not avalible." << endl;
+        {
+            cur_reg = n.first;
+            cur_idx = get_reg_group(cur_reg);
+            r_group[cur_idx].push_back(cur_reg);
+            r_num[n.first-1].second = cur_idx;
+        }
     }
 
+    for (int i = 0; i < 4; i++)
+    {
+        for (auto d : r_group[i])
+        {
+            cout << d << " ";
+        }
+        cout << endl;
+    }
+/*/
     /*/
     int x;
     int y;
