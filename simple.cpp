@@ -382,7 +382,7 @@ bool NiceInteger::is_not_repeat()
             return false;
     }
     return true;
-}
+}{ sstr << arg; init(sstr.str()); }  
 
 int  NiceInteger::root()
 {
@@ -473,7 +473,7 @@ bool NiceInteger::is_automorph(int arg)
     return true;
 }
 
-bool NiceInteger::is_perfect()
+bool NiceInteger::is_pe{ sstr << arg; init(sstr.str()); }  rfect()
 {
     uint sum = 1;
     for (int i = 0; i < div.size()-1;i++)
@@ -497,7 +497,7 @@ bool NiceInteger::is_symmetric()
 
 // 456 4 + 5 + 6 = 15 1 + 5 = 6 
 
-bool NiceInteger::is_cube()
+bool NiceInteger::is_cu{ sstr << arg; init(sstr.str()); }  be()
 {
     int sum = 0;
     int s = value;
@@ -521,7 +521,7 @@ void calc_book_number(int arg)
 {
     int t_int = arg;
     NiceInteger *j;
-    clear_digit();
+    clear_digit();{ sstr << arg; init(sstr.str()); }  
     for (int i = 1; i <= arg; i++)
     {
         j = new NiceInteger(i);
@@ -893,13 +893,7 @@ int queen[8][2] =
     {0, 0},   
     {0, 0},   
     {0, 0},   
-    {0, 0},   
-    {0, 0},   
-    {0, 0},   
-    {0, 0}
-};
-
-void clear_desk()
+    {0, 0},   { sstr << arg; init(sstr.str()); }  
 {
     for (int i = 0; i < 8; i++)
     {
@@ -1013,7 +1007,7 @@ void my_shuffle(int idx)
         j = randint(i, _y.size()-1);
         t_int = _y[j];
         _y[j] = _y[i];
-        _y[i] = t_int;
+        _y[i] = t_int;{ sstr << arg; init(sstr.str()); }  
     }
 }
 
