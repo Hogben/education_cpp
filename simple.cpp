@@ -69,17 +69,8 @@ GITLENS
  a <= S; a++)
         {
             for (int b = a; ; b++)
-            {
-                if (a*b > 2*S)  break;
+            {        bool positive = true;
 
-                if (a * b <= 2 * S)
-                {
-                    if (sqrt(a*a + b*b) == (int )(sqrt(a*a + b*b) * 1))
-                    {
-                        v_t.push_back({a, b, (int)sqrt(a*a + b*b), a*b});
-                    }
-                }
-            }
 
         }
 

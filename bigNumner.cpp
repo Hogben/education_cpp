@@ -8,24 +8,32 @@ class BigNumber
 {
     public:
         BigNumber(string arg)   { init(arg); }
-        BigNumber(short arg)    { sstr << arg; init(sstr.str()); }
-        BigNumber(int arg)      { sstr << arg; init(sstr.str()); }  
-        BigNumber(long arg)     { sstr << arg; init(sstr.str()); }  
+        BigNumber(short arg)    { s_str << arg; init(s_str.str()); }
+        BigNumber(int arg)      { s_str << arg; init(s_str.str()); }  
+        BigNumber(long arg)     { s_str << arg; init(s_str.str()); }  
 
         void init(string arg);
         void view();
-        
-        string sum(BigNumber *a);
+
+        string sum(string val, BigNumber* bn);
+        string sub(string val, BigNumber* bn);
 
         vector<short>   digit;
         string GetValue() { return value; };
+        bool IsPositive() { return positive; };
     protected:
-        stringstream sstr;   
+        stringstream s_str;   
         string value;
+        bool positive = true;
 };
 
 void BigNumber::init(string arg)
 {
+    if (arg[0] == '-')  
+    {
+        positive = false;
+        arg = arg.substr(1,arg.size()-1);
+    }
     value = arg;
     digit.clear();
     for (int i = arg.size(); i > 0; i--)
@@ -36,59 +44,96 @@ void BigNumber::init(string arg)
 
 void BigNumber::view()
 {
-    for(short i = digit.size(); i > 0; i--)
+    if (!IsPositive())  cout << "-";
+    for(int i = digit.size(); i > 0; i--)
     {
         cout << digit[i-1];
     }
     cout << endl;
 }
 
-string BigNumber::sum(BigNumber *arg)
+string BigNumber::sum(string s_arg, BigNumber* arg)
 {
     vector<short>    res;
     int max, min;
     short carry = 0;
-    if  (digit.size() > arg->digit.size()) 
+    BigNumber *t_num = new BigNumber(s_arg);
+    stringstream sstr;   
+
+//    t_num->view();
+//    arg->view();
+    sstr.str("");
+
+    if (t_num->IsPositive() && arg->IsPositive())
     {
-        min = arg->digit.size();
-        max = digit.size();
+        if  (t_num->digit.size() > arg->digit.size()) 
+        {
+            min = arg->digit.size();
+            max = t_num->digit.size();
+        }
+        else
+        {
+            max = arg->digit.size();
+            min = t_num->digit.size();
+        }
+        int idx;
+        short t_short;
+        for (idx = 0; idx < min; idx++)
+        {
+            t_short = t_num->digit[idx] +  arg->digit[idx] + carry;
+            carry = (t_short > 9) ? 1 : 0;
+            res.push_back(t_short%10);
+        }    
+        for (idx = min; idx < max; idx++)
+        {
+            if (max == t_num->digit.size())
+                t_short = t_num->digit[idx] + carry;
+            else
+                t_short = arg->digit[idx] + carry;
+            carry = (t_short > 9) ? 1 : 0;
+            res.push_back(t_short%10);
+        }
+        if (carry > 0) 
+            res.push_back(1);
+
+        for(int i = res.size(); i > 0; i--)
+        {
+            sstr << res[i-1];
+        }
+
+        return sstr.str();
     }
     else
     {
-        max = arg->digit.size();
-        min = digit.size();
-    }
-    int idx;
-    short t_short;
-    for (idx = 0; idx < min; idx++)
-    {
-        t_short = digit[idx] +  arg->digit[idx] + carry;
-        carry = (t_short > 9) ? 1 : 0;
-        res.push_back(t_short%10);
-    }    
-    for (idx = min; idx < max; idx++)
-    {
-        if (max == digit.size())
-            t_short = digit[idx] + carry;
+        if (t_num->IsPositive() && !arg->IsPositive())
+        {
+            return(sub(t_num->GetValue(), new BigNumber(arg->GetValue())));
+        }
         else
-            t_short = arg->digit[idx] + carry;
-        carry = (t_short > 9) ? 1 : 0;
-        res.push_back(t_short%10);
+        {
+            if (!t_num->IsPositive() && arg->IsPositive())
+            {   
+                return(sub(arg->GetValue(), new BigNumber(t_num->GetValue())));
+            }
+            else
+            {
+                sstr << "-";
+                sstr << sum(t_num->GetValue(), new BigNumber(arg->GetValue()));
+                return sstr.str();
+            }
+        }
     }
-    if (carry > 0) 
-        res.push_back(1);
 
-    sstr.str("");
-    
-    for(short i = res.size(); i > 0; i--)
-    {
-        sstr << res[i-1];
-    }
+}
 
-    return sstr.str();
+string BigNumber::sub(string a, BigNumber *b)
+{
+    if (!b->IsPositive()) return sum(a, b);
+    return "sub";
 }
 
 int main()
 {
-    cout << BigNumber(1).sum(new BigNumber("9999999999999999999999999999")) << endl;
+    BigNumber *n1 = new BigNumber(-11);
+    cout << BigNumber(32233232).sum("-11", new BigNumber(-11)) << endl;
 }
