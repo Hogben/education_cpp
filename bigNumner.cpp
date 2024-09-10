@@ -56,11 +56,14 @@ class BigNumber
         BigNumber& sub(BigNumber* bn);
         
         BigNumber& multi(BigNumber* bn);
+        BigNumber& div(BigNumber* bn);
 
         vector<short>   digit;
         string GetValue() { return value; };
         bool IsPositive() { return positive; };
         bool positive = true;
+
+        string remainder;
     protected:
         stringstream s_str;   
         string value;
@@ -79,13 +82,51 @@ void BigNumber::init(string arg)
     {
         digit.push_back((arg[i-1]-'0'));
     }
+    remainder = "0";
 }
+
 
 void BigNumber::view()
 {
     if (!IsPositive())  cout << "-";
     cout << value;
     cout << endl;
+}
+
+BigNumber& BigNumber::multi(BigNumber* arg)
+{
+    bool final_positive = !(positive ^ arg->positive);
+    BigNumber   *t_bn;
+    string      main_number;
+
+    if (value != "0" && arg->value != "0")
+    {
+        positive = true;
+        arg->positive = true;
+        if (*this > *arg)
+        {
+            t_bn = new BigNumber(arg->value);
+            main_number = value;
+        }
+        else
+        {
+            t_bn = new BigNumber(value);
+            main_number = arg->value;
+        }
+    
+        while (true)
+        {
+            if (t_bn->digit.size() == 1 && t_bn->digit[0] == 1)
+                break;
+            add(new BigNumber(main_number));
+            t_bn->sub(new BigNumber(1));
+        }
+        positive = final_positive;
+    }
+    else
+        init("0");
+
+    return *this;
 }
 
 BigNumber& BigNumber::add(BigNumber* arg)
@@ -251,9 +292,7 @@ BigNumber& BigNumber::sub(BigNumber *b)
 
 int main()
 {
-                                     
-    BigNumber *n1 = new BigNumber("10000000000000000000000000000000000000000000");
+    BigNumber *n1 = new BigNumber("999999999999999");
 
-    cout << n1->sub(new BigNumber(11)) << endl;
-
+    cout << n1->multi(new BigNumber("-45430")) << endl;
 }
