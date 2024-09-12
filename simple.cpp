@@ -373,7 +373,7 @@ bool NiceInteger::is_not_repeat()
             return false;
     }
     return true;
-}{ sstr << arg; init(sstr.str()); }  
+}
 
 int  NiceInteger::root()
 {
@@ -464,7 +464,7 @@ bool NiceInteger::is_automorph(int arg)
     return true;
 }
 
-bool NiceInteger::is_pe{ sstr << arg; init(sstr.str()); }  rfect()
+bool NiceInteger::is_perfect()
 {
     uint sum = 1;
     for (int i = 0; i < div.size()-1;i++)
@@ -488,7 +488,7 @@ bool NiceInteger::is_symmetric()
 
 // 456 4 + 5 + 6 = 15 1 + 5 = 6 
 
-bool NiceInteger::is_cu{ sstr << arg; init(sstr.str()); }  be()
+bool NiceInteger::is_cube()
 {
     int sum = 0;
     int s = value;
@@ -512,7 +512,7 @@ void calc_book_number(int arg)
 {
     int t_int = arg;
     NiceInteger *j;
-    clear_digit();{ sstr << arg; init(sstr.str()); }  
+    clear_digit();  
     for (int i = 1; i <= arg; i++)
     {
         j = new NiceInteger(i);
@@ -865,160 +865,6 @@ void hanoy(int disk, int src, int trg, int temp)
     }
 }
 
-//Определить, можно ли расставить восемь ферзей на шахматной доске так, чтобы никакие два из них не угрожали друг другу.
-int desk[8][8] = 
-{
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0},
-    { 0, 0, 0, 0, 0, 0, 0, 0}
-};
-
-int queen[8][2] = 
-{
-    {0, 0},   
-    {0, 0},   
-    {0, 0},   
-    {0, 0},   
-    {0, 0},   { sstr << arg; init(sstr.str()); }  
-{
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-            desk[i][j] = 0;
-    }
-}
-
-int sum_diag(int idx)
-{
-    int rez = 0;;
-
-    int x = queen[idx][0];
-    int y = queen[idx][1];
-
-    while (x < 7 && y < 7)
-    {
-            rez += desk[x+1][y+1];
-            y++;
-            x++;
-    }    
-
-    x = queen[idx][0];
-    y = queen[idx][1];
-
-    while (x > 0 && y > 0)
-    {
-        rez += desk[x-1][y-1];
-        y--;
-        x--;
-    }    
-
-    x = queen[idx][0];
-    y = queen[idx][1];
-
-    while (x < 7 && y > 0) 
-    {
-        rez += desk[x+1][y-1];
-        y--;
-        x++;
-    }    
-
-    x = queen[idx][0];
-    y = queen[idx][1];
-
-    while (x > 0 && y < 7)
-    {
-        rez += desk[x-1][y+1];
-        y++;
-        x--;
-    }    
-
-    return rez;
-}
-
-void set_desk(int idx = 8)
-{
-    clear_desk();
-    
-    for (int i = 0; i < idx; i++)
-    {
-        desk[queen[i][0]][queen[i][1]] = 1;
-    }
-}
-
-bool check_desk(int idx = 8)
-{
-/*/    
-    for (int i = 0; i < idx - 1; i++)
-    {
-        for (int j = i+1; j < idx; j++)
-        {
-            if (queen[i][0] == queen[j][0] && queen[i][1] == queen[j][1])
-            {
-                cout << "queen count:" << idx << " wrong x, y: "<< endl;
-                return false;
-            }
-        }
-    }
-/*/
-
-    set_desk(idx);
-    int sum;
-
-    for (int i = 0; i < idx; i++)
-    {
-        sum = 0;
-        for (int j = 0; j < 8; j++)
-        {
-            sum += desk[j][queen[i][1]];
-            sum += desk[queen[i][0]][j];
-            sum += sum_diag(i);
-            if (sum > 2)    return false;
-        }
-    }
-    return true;
-}
-
-vector<int> _y = {0, 1, 2, 3, 4, 5, 6, 7};
-
-unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
-default_random_engine rnd(seed);
-
-void my_shuffle(int idx)
-{
-    int t_int;
-    int j;
-
-    for (int i = idx; i < _y.size()-1; i++)
-    {
-        j = randint(i, _y.size()-1);
-        t_int = _y[j];
-        _y[j] = _y[i];
-        _y[i] = t_int;{ sstr << arg; init(sstr.str()); }  
-    }
-}
-
-
-void fill_y(int idx)
-{
-//    shuffle(_y.begin()+idx, _y.end(), rnd);
-    my_shuffle(idx);
-    
-    cout << idx << ": ";
-    for (int i : _y) cout << i << ", ";
-    cout << endl;
-    
-}
-
-
-//Напишите программу, позволяющую выполнять арифметические операции 
-//(сложение, разность, умножение, целочисленное деление, нахождение остатка) 
-//и операции сравнения (больше, меньше, равно, не больше, не равно и т.д.) над большими целыми числами.
-
 short n;
 
 
@@ -1112,140 +958,52 @@ string sum(string s1, string s2)
     return t_str.str();
 }
 
+
+//Зашифровать данный текст с помощью шифра Цезаря.
+// A-Z 65-90 a-z 97-122
+string code_ceaser(string arg, short off)
+{
+    if (off == 0 || off > 25)    return arg;
+    stringstream t_str;
+
+    char t_ch;
+    for (char c : arg)
+    {
+        t_ch = c;
+
+        if (c >= 65 && c <= 90)// || (c >= 97 && c <= 122))
+        {
+            t_ch -= (char)off;
+            if (t_ch < 65) 
+            {
+                t_ch += (char)26;               
+            }   
+        }
+
+        if (c >= 97 && c <= 122)// || (c >= 97 && c <= 122))
+        {
+            t_ch -= (char)off;
+            if (t_ch < 97) 
+            {
+                t_ch += (char)26;               
+            }   
+        }
+
+        t_str << t_ch;
+    }
+
+    return t_str.str();
+}
+
 int main ()
 {
-    sum ("1234567890123", "39545");
-    /*/
-    int r_count  = 16;
-
-    for (int i = 1; i <= r_count; i++)  r_num.push_back(pair{i,-1});
-
-    neighbors.push_back(pair{1,2});
-    neighbors.push_back(pair{1,5});
-    neighbors.push_back(pair{1,6});
-    neighbors.push_back(pair{2,3});
-    neighbors.push_back(pair{2,5});
-    neighbors.push_back(pair{2,6});
-    neighbors.push_back(pair{2,7});
-    neighbors.push_back(pair{3,4});
-    neighbors.push_back(pair{3,6});
-    neighbors.push_back(pair{3,7});
-    neighbors.push_back(pair{3,8});
-    neighbors.push_back(pair{4,7});
-    neighbors.push_back(pair{4,8});
-    neighbors.push_back(pair{5,6});
-    neighbors.push_back(pair{5,9});
-    neighbors.push_back(pair{5,10});
-    neighbors.push_back(pair{6,7});
-    neighbors.push_back(pair{6,9});
-    neighbors.push_back(pair{6,10});
-    neighbors.push_back(pair{6,11});
-    neighbors.push_back(pair{7,8});
-    neighbors.push_back(pair{7,10});
-    neighbors.push_back(pair{7,11});
-    neighbors.push_back(pair{7,12});
-    neighbors.push_back(pair{8,11});
-    neighbors.push_back(pair{8,12});
-    neighbors.push_back(pair{9,10});
-    neighbors.push_back(pair{9,13});
-    neighbors.push_back(pair{9,14});
-    neighbors.push_back(pair{10,11});
-    neighbors.push_back(pair{10,14});
-    neighbors.push_back(pair{10,15});
-    neighbors.push_back(pair{11,12});
-    neighbors.push_back(pair{11,15});
-    neighbors.push_back(pair{11,16});
-    neighbors.push_back(pair{12,16});
-    neighbors.push_back(pair{13,14});
-    neighbors.push_back(pair{14,15});
-    neighbors.push_back(pair{15,16});
-    neighbors.push_back(pair{16, 0});
-
-    int fill_count = 0;
-    int cur_reg;
-    int cur_idx;
-    for (auto n : neighbors)    
-    {
-        if (fill_count == 0)    
-        {
-            fill_count++;
-            r_group[0].push_back(n.first);
-            r_num[n.first-1].second = 0;
-            cur_reg = n.first; 
-            continue;
-        }
-        if (n.first == cur_reg) continue;
-        else
-        {
-            cur_reg = n.first;
-            cur_idx = get_reg_group(cur_reg);
-            r_group[cur_idx].push_back(cur_reg);
-            r_num[n.first-1].second = cur_idx;
-        }
-    }
-
-    for (int i = 0; i < 4; i++)
-    {
-        for (auto d : r_group[i])
-        {
-            cout << d << " ";
-        }
-        cout << endl;
-    }
-/*/
-    /*/
-    int x;
-    int y;
-
-    int check_count = 0;
-
-    fill_y(0);
-
-    for (int i = 0; i < 8; i++) 
-    {
-        x = i;
-        y = _y[i];
-
-        if (x == y || x == 7-y) 
-        {
-            fill_y(i);            
-            i--;
-            continue;
-        }
-
-        queen[i][0] = x;
-        queen[i][1] = y;
-        
-        if (i > 0)
-        {
-            if (!check_desk(i+1))
-            {
-                check_count++;
-                if (check_count == 20)
-                {
-                    check_count = 0;
-                    i = 1;
-                }
-                fill_y(i);            
-                i--;
-                continue;
-            }
-        }
-    }
-
-    for (int i = 0; i < 8; i++)
-    {
-        for (int j = 0; j < 8; j++)
-        {
-            cout << ((desk[i][j] == 1) ? "#" : ".") << " ";
-        }
-        cout << endl;
-    }
-    cout << endl;
-
-
-//    cout << (check_desk() ? "Nice" : "Wrong" ) << endl;
-    cout <<  "Nice" << endl;
-/*/
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 0) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 1) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 2) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 3) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 4) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 25) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 26) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 19) << endl;    
 }
 

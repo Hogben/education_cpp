@@ -47,7 +47,17 @@ class BigNumber
 
         friend bool operator < (const BigNumber& a, const BigNumber& b) 
         {   
-            return (!(a > b));
+            if (a == b) return false;
+            if (!a.positive && b.positive)  return true;
+            if (a.positive && !b.positive)  return false;
+            if (b.digit.size() > a.digit.size())    return a.positive;
+            if (b.digit.size() < a.digit.size())    return !a.positive;
+            for (int i = a.digit.size(); i > 0; i--)
+            {
+                if (b.digit[i-1] > a.digit[i-1])    return a.positive;
+                if (b.digit[i-1] < a.digit[i-1])    return !a.positive;
+            }
+            return false;
         }
 
         friend ostream& operator << (ostream &ostrm, const BigNumber& a) { return ostrm << (a.positive ? "" : "-") << a.value; }
@@ -128,6 +138,47 @@ BigNumber& BigNumber::multi(BigNumber* arg)
 
     return *this;
 }
+
+BigNumber& BigNumber::div(BigNumber* arg)
+{
+    bool final_positive = !(positive ^ arg->positive);
+    BigNumber   *t_bn;
+    t_bn = new BigNumber(0);
+    string t_str;
+
+    if (arg->value == "0")
+    {
+        remainder = "try division on zero :(";
+        return *this;
+    }
+
+    if (value != "0")
+    {
+        positive = true;
+        arg->positive = true;
+
+        while (true)
+        {
+            if (*this < *arg)
+                break;
+            sub(new BigNumber(arg->value));    
+            t_bn->add(new BigNumber(1));
+        }
+        t_str = value;
+        init(t_bn->value);
+        remainder = t_str;
+
+        positive = final_positive;
+    }
+    else
+    {
+        init("0");
+    }
+    
+    return *this;
+}
+
+
 
 BigNumber& BigNumber::add(BigNumber* arg)
 {
@@ -292,7 +343,8 @@ BigNumber& BigNumber::sub(BigNumber *b)
 
 int main()
 {
-    BigNumber *n1 = new BigNumber("999999999999999");
+    BigNumber *n1 = new BigNumber("999999999999999999999999999999999990");
 
-    cout << n1->multi(new BigNumber("-45430")) << endl;
+    cout << n1->div(new BigNumber("999999999999999999999999999999999")) << endl;
+    cout << "rem: " << n1->remainder << endl;
 }
