@@ -5,9 +5,10 @@
 #include <chrono>
 #include <vector>
 #include <algorithm>
-#include <thread>
 #include <stdlib.h>
 #include <cmath>
+#include <random>
+#include <map>
 
 using namespace std;
 
@@ -57,29 +58,25 @@ int main()
 
         if (S == 0 )   break;
 
-        for (int a = 1; a <= S; a++)
+        for (int a = 1;
+ПРОБЛЕМЫ
+ВЫХОДНЫЕ ДАННЫЕ
+КОНСОЛЬ ОТЛАДКИ
+ТЕРМИНАЛ
+ПОРТЫ
+GITLENS
+КОММЕНТАРИИ
+ a <= S; a++)
         {
             for (int b = a; ; b++)
-            {
-                if (a*b > 2*S)  break;
+            {        bool positive = true;
 
-                if (a * b <= 2 * S)
-                {
-                    if (sqrt(a*a + b*b) == (int )(sqrt(a*a + b*b) * 1))
-                    {
-                        v_t.push_back({a, b, (int)sqrt(a*a + b*b), a*b});
-                    }
-                }
-            }
 
         }
 
         sort (v_t.begin(), v_t.end(), [](auto a, auto b) {return a.S < b.S;});
 
-        //for (auto i : v_t) cout << i.a << ", " << i.b << ", " << i.c << ", " << i.S/2 << endl;
-
-
-        int t_S = v_t.cbegin()->S;
+        //for (auto i : v_t) cout << i.a << "Написать программу для кодирования данного текста с помощью азбуки Морзе
 
         for (auto i : v_t)        
         {
@@ -98,7 +95,15 @@ int main()
             }
         }
     }
-    cout << "ending program..." << endl;
+    cout << "ending pro
+ПРОБЛЕМЫ
+ВЫХОДНЫЕ ДАННЫЕ
+КОНСОЛЬ ОТЛАДКИ
+ТЕРМИНАЛ
+ПОРТЫ
+GITLENS
+КОММЕНТАРИИ
+gram..." << endl;
 
     return 0;
 }
@@ -253,8 +258,108 @@ class NiceInteger
         vector<int> digit;
         bool is_not_repeat();
         int value;
+        int make_int(vector<int> &);
+        string make_rome_number();
 };
 
+string NiceInteger::make_rome_number()
+{
+    /*/
+    1 = I
+    5 = V
+    10 = X
+    50 = L
+    100 = C
+    500 = D
+    1000 = M
+    
+    9  = IX
+    14 = XIV
+    602 = DCII
+
+    902 = CMII
+    /*/
+    stringstream t_str;
+
+    if (digit.size() > 3)
+    {
+        for (int i = 0; i < value / 1000; i++)  t_str << "M";
+    }
+    if (digit[2] > 0)
+    {
+        switch (digit[2])
+        {
+            case 1:
+                t_str << "C";
+                break;
+            case 2:
+                t_str << "CC";
+                break;
+            case 3:
+                t_str << "CCC";
+                break;
+            case 4:
+                t_str << "CD";
+                break;
+            case 5:
+                t_str << "D";
+                break;
+            case 6:
+                t_str << "DC";
+                break;
+            case 9:
+                t_str << "CM";
+                break;
+        }
+    }
+    if (digit[0] > 0)
+    {
+        switch (digit[0])
+        {
+            case 1:
+                t_str << "I";
+                break;
+            case 2:
+                t_str << "II";
+                break;
+            case 3:
+                t_str << "III";
+                break;
+            case 4:
+                t_str << "IV";
+                break;
+            case 5:
+                t_str << "V";
+                break;
+            case 6:
+                t_str << "VI";
+                break;
+            case 7:
+                t_str << "VII";
+                break;
+            case 8:
+                t_str << "IIX";
+                break;
+            case 9:
+                t_str << "IX";
+                break;
+        }
+    }
+    return t_str.str();
+}
+
+int NiceInteger::make_int(vector<int> &arg)
+{
+    int res = 0;
+    int multi = 1;
+    for (int i : arg)
+    {
+        res += i * multi;
+        multi *= 10;
+    }
+    return res;
+}
+   
 bool NiceInteger::is_not_repeat()
 {
     int _digit[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -318,7 +423,7 @@ void NiceInteger::fill_digit()
         digit.push_back(0);
         return;
     }
-    while (t_int > 0)
+    while (t_int > 0)   
     {
         digit.push_back(t_int % 10);
         t_int /= 10;
@@ -327,7 +432,6 @@ void NiceInteger::fill_digit()
 
 bool NiceInteger::happy_ticket()
 {
-    if (digit.size() & 1) return false;
     int sum_1 = 0;
     int sum_2 = 0;
     for (int i  = 0; i < digit.size()/2; i++)
@@ -382,15 +486,6 @@ bool NiceInteger::is_symmetric()
     return true;
 }
 
-bool NiceInteger::palindrome()
-{
-    for (int i = 0; i < digit.size(); i++)
-    {
-        if (digit[i] != digit[digit.size()-i-1])    return false;
-    }
-    return true;
-}
-
 // 456 4 + 5 + 6 = 15 1 + 5 = 6 
 
 bool NiceInteger::is_cube()
@@ -417,7 +512,7 @@ void calc_book_number(int arg)
 {
     int t_int = arg;
     NiceInteger *j;
-    clear_digit();
+    clear_digit();  
     for (int i = 1; i <= arg; i++)
     {
         j = new NiceInteger(i);
@@ -444,39 +539,471 @@ void full_square()
     }  
 }
 
-void print_digit()
+int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
+
+void format_text(string arg_s, int arg_count)
 {
-    for (int i = 0; i < 10; i++)
+    int count = 0;
+    int w_count = 1;
+    for (char c : arg_s)
     {
-        cout << i << "  ==> " << _digit[i] << endl;   
+        if (c == ' '  || c == '\n')
+        {
+            count++;
+            if (count == w_count)
+            {
+                count = 0;
+                w_count++;
+                if (w_count > arg_count)
+                {
+                    w_count = 1;
+                }
+                cout << endl;
+            }   
+            else
+                cout << ' ';
+        }
+        else
+            cout << c;
+    }
+    cout << endl;
+}
+/*/
+void is_interesting(int arg)
+{
+    vector<int> t_v;
+    NiceInteger * n;
+    int multi = 10;
+    int t_int;
+    bool run = true;
+    while (run)
+    {
+        t_int = arg * multi + 1;
+            t_v.clear();
+            n = new NiceInteger(j);
+            t_v.push_back(arg);
+            for (int i = 0; i < n->digit.size() - 1; i++) 
+            {
+                t_v.push_backcout(n->digit[i]);
+            }       
+            cout << j << " " << n->make_int(t_v) << endl;
+            if (n->make_int(t_v) * arg == j)
+            {               
+                 cout << endl;
+                run = false;
+                cout << j << endl;
+                break;
+            }
+        }
+        multi *= 10;
+        delete n;
+    }
+}
+/*/
+struct student
+{
+    int number;
+    string fio;
+};
+
+//Преобразовать простую дробь в десятичную. Если дробь окажется периодической, то период указать в скобках. 
+//Период искать в первых 100 цифрах
+vector<int> p;
+vector<int> per;
+vector<int> t_per;
+
+bool new_per = true;
+
+void print_vect(vector<int> &v)
+{
+    for (int i : v)
+            cout << i;
+    cout << endl;
+}
+
+void copy_vect(vector<int> &src, vector<int> &trg)
+{
+    trg.clear();
+    cout << endl;
+    for (int i = 0; i < src.size(); i++)   
+    {
+        trg.push_back(src[i]);
+    }
+    cout << endl;
+}    
+
+bool check_per(int &i, int  &per_check, int count)
+{
+    bool find = true;
+    if (count > 0)
+    {
+        find = true;
+        for (int j = 0; j < count; j++)
+        {
+            if (p[i - count + j] != per[j])
+            {
+                find = false;
+                break;
+            }
+        }
+        if (find)
+        {
+            per_check++;
+        }
+        else
+        {
+            per_check = 0;     
+            copy_vect(t_per, per);
+        }
+    }
+    else
+    {
+        copy_vect(t_per, per);
+    }
+    return find;
+}
+
+bool mega_check_per(int index)
+{
+    bool rez = true;
+    int idx = index;
+
+    per.clear();
+    bool find = false;
+
+    int per_check = 0;
+    int i;
+
+    new_per = true;
+    t_per.clear();
+    t_per.push_back(p[index]);
+
+    for (i = index+1; i < p.size(); i++)
+    {
+        if (p[i] == t_per[0])
+        {   
+            if (new_per)
+            {
+                idx = i - per.size();
+                rez = check_per(i, per_check, per.size());
+            }
+            new_per = false;
+        }
+        else
+            new_per = true;
+        t_per.push_back(p[i]);
+    }
+
+    if (per_check > 0 && check_per(i, per_check, i - (idx + per.size())))
+    {
+        rez = true;
+    }
+    else
+    {
+        rez = false;
+    }
+    return rez;
+}
+
+void decimal()
+{
+    int denominator;
+    int numerator;
+    int remain;
+    cout << "numerator: ";
+    cin >> numerator; 
+    cout << endl <<"denomunator: ";
+    cin >> denominator;
+    cout << numerator/denominator << ",";
+
+    int per_size = 1;
+
+    for (int i = 0; i < 100; i++)
+    {
+        remain = numerator % denominator;
+        if (remain == 0) break;
+        remain *=10;
+        while (remain < denominator)      
+        {
+            cout << "0";
+            p.push_back(0);
+            remain *=10;
+            i++;
+        }        
+        numerator = remain; 
+        cout << numerator/denominator;
+        p.push_back(numerator/denominator);
+    }
+    //-------------- search period ???
+    int begin_idx = 0;
+
+    bool rez = false;
+    while(rez  != true && begin_idx < 97)
+    {   
+        rez = mega_check_per(begin_idx);
+        begin_idx++;
+    }
+
+    if (rez)
+    {
+        cout << endl << "find period(" << per.size() << "): ";
+        for (int a : per)
+            cout << a;
+    }
+    else
+        cout << endl << "not period";
+
+    cout << endl;
+}
+//Написать программу для кодирования данного текста с помощью азбуки Морзе
+map<char, string> morse;
+
+void fill_code()
+{
+    morse.insert({'A', ".-"});
+    morse.insert({'B', "-..."});
+    morse.insert({'C', "-.-."});
+    morse.insert({'D', "-.."});
+    morse.insert({'E', "."});
+    morse.insert({'F', "..-."});
+    morse.insert({'G', "--."});
+    morse.insert({'H', "...."});
+    morse.insert({'I', ".."});
+    morse.insert({'J', ".---"});
+    morse.insert({'K', "-.-"});
+    morse.insert({'O', "---"});
+    morse.insert({'P', ".--."});
+    morse.insert({'Q', "--.-"});
+    morse.insert({'R', ".-."});
+    morse.insert({'S', "..."});
+    morse.insert({'T', "-"});
+    morse.insert({'U', "..-"});
+    morse.insert({'V', "...-"});
+    morse.insert({'W', ".--"});
+    morse.insert({'X', "-..-"});
+    morse.insert({'Y', "-.--"});
+    morse.insert({'Z', "--.."});
+} 
+
+string make_morse(string arg)
+{
+    stringstream t_str;
+    for (char i : arg)
+    {
+        if (i == ' ')
+        {
+            t_str << endl;
+        }
+        else
+        {
+            t_str << morse.at(i) << " ";
+        }
+    }
+    return t_str.str();
+}
+
+//Два игрока по очереди выбирают по одному целому числу из отрезка [1; 10]. 
+//Все выбранные числа складываются. Игра продолжается до тех пор, пока вся сумма не станет равной 100. 
+//Выигрывает тот, кто сделал последний ход. 
+//Напишите программу для игры с компьютером. 
+//Компьютер должен придерживаться выигрышной стратегии, если она существует.
+
+void the_game()
+{
+    int sum = 0;
+    int a = 0;
+    
+    bool people_win = true;
+
+    while (sum != 100)
+    {
+        while (a < 1 || a > 10)  cin >> a;
+        
+        sum += a;
+        if (sum == 100)
+           break;
+
+        cout << "sum: " << sum << endl;
+
+        if (100 - sum <= 10)
+            a = 100 - sum;
+        else
+        {
+            a = 9-(sum % 10);
+            if (a == 0)
+            {
+                if  (!((sum / 10) & 1))
+                    a = randint(1, 9);
+                else
+                    a = 10;
+            }
+        }
+        //            a = randint(1, 10);
+        sum += a;
+        
+        cout << "sum: " << sum << endl;
+        if (sum == 100)
+            people_win = false;
+
+        a = 0;
+    }
+    cout << (people_win ?  "You" : "Computer");
+    cout << " win" << endl;
+}
+
+void hanoy(int disk, int src, int trg, int temp)
+{
+    if (disk == 1)
+    {
+        cout << "move " << src << " => " << trg << endl;
+    }
+    else
+    {
+        hanoy (disk - 1, src, temp, trg);
+        cout << "move " << src << " => " << trg << endl;
+        hanoy (disk - 1, temp, trg, src);
     }
 }
 
-//Б. Кордемский указывает одно интересное число 145, которое равно сумме факториалов своих цифр: 145=1!+4!+5!
-//. Он пишет, что неизвестно, есть ли еще такие числа, удовлетворяющие названному условию. Помогите найти все такие числа.
-// до 1000000
+short n;
 
-int _fact[10] = {1, 1, 2, 6, 24, 120, 720, 5040, 40320, 362880};
 
-void is_interesting()
+struct Point 
 {
-    int sum = 0;
-    NiceInteger *j;
-    for (int i = 1; i < 1000000; i++)
+    int x;
+    int y;
+};
+
+struct FreePoint 
+{
+    double x;
+    double y;
+};
+
+class Circle
+{
+public:
+    Circle(Point cntr, int r) : radius(r), centre(cntr) {}; 
+    Point centre;
+    int radius;
+    double square = radius * radius * M_PI;
+};
+
+double point_distance(Point p1, Point p2)
+{
+    return sqrt((p2.x - p1.x)*(p2.x - p1.x) + (p2.y - p1.y)*(p2.y - p1.y));
+}
+
+vector<pair<int, int>> r_num;
+vector<pair<int, int>> neighbors;
+vector<int> r_group[4];
+
+int get_reg_group(int c_reg)
+{
+    int idx = 0;
+    bool find = true;
+
+    vector<int> f_group;
+
+//    while (find)
     {
-        sum = 0;
-        j = new NiceInteger(i);
-        for (int k : j->digit)
+        for (int reg = 1; reg < c_reg; reg++)
         {
-            sum += _fact[k];
+            for (auto t_neighbors : neighbors)
+            {
+                find = false;
+                if (t_neighbors.first == reg && t_neighbors.second == c_reg)
+                {
+                    f_group.push_back(r_num[reg-1].second);
+                    find = true;
+                    break;
+                }
+            }
         }
-        if (sum == j->value)
-            cout << i << endl;
     }
-    
+//    cout << c_reg << " ==> " << idx << endl;
+    for (auto g : f_group)
+    {
+        if (g == idx)   idx++;
+    }
+
+    return idx;
+}
+
+void string_to_array(string s, vector<short> &v)
+{
+    string t_str;
+    t_str = s;
+    while (t_str.size() > 3)
+    {
+        v.push_back(stoi(t_str.substr(t_str.size()-3, 3)));
+        t_str = t_str.substr(0, t_str.size()-3);
+    }
+    if (t_str.size() > 0)
+    {
+        v.push_back(stoi(t_str));
+    }
+}
+
+string sum(string s1, string s2)
+{
+    stringstream t_str;
+    short separ = 1000;
+    vector<short> n1;
+    vector<short> n2;
+
+    string_to_array(s1, n1);
+    string_to_array(s2, n2);
+
+    return t_str.str();
+}
+
+
+//Зашифровать данный текст с помощью шифра Цезаря.
+// A-Z 65-90 a-z 97-122
+string code_ceaser(string arg, short off)
+{
+    if (off == 0 || off > 25)    return arg;
+    stringstream t_str;
+
+    char t_ch;
+    for (char c : arg)
+    {
+        t_ch = c;
+
+        if (c >= 65 && c <= 90)// || (c >= 97 && c <= 122))
+        {
+            t_ch -= (char)off;
+            if (t_ch < 65) 
+            {
+                t_ch += (char)26;               
+            }   
+        }
+
+        if (c >= 97 && c <= 122)// || (c >= 97 && c <= 122))
+        {
+            t_ch -= (char)off;
+            if (t_ch < 97) 
+            {
+                t_ch += (char)26;               
+            }   
+        }
+
+        t_str << t_ch;
+    }
+
+    return t_str.str();
 }
 
 int main ()
 {
-    is_interesting();
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 0) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 1) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 2) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 3) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 4) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 25) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 26) << endl;    
+    cout << code_ceaser("AbcdefGH iJKLMnop qRSTUVW xyZ", 19) << endl;    
 }
+
