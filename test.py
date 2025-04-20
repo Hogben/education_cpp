@@ -140,6 +140,7 @@ order by 1 desc, 2
     rows = cursor.fetchall()
     for row in rows:
         encoded_row = [row[0]] + [row[1].encode('cp1251').decode('utf8')] + [row[2]]
+# encoded_row = [row[0]] + [item.encode('cp1251').decode('utf8') if isinstance(item, str) else item for item in row[1:]]
         print(encoded_row)
 
 
