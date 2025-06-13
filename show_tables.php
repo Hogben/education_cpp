@@ -29,6 +29,7 @@ $host = 'localhost';
 $db = 'test';
 $u_name = 'akim';
 $u_pass = 'fGUA89o6q1ANoh5n';
+
 try {
     //-- create connection
     $conn = new PDO("mysql:host=$host; dbname=$db", $u_name, $u_pass);
