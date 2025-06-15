@@ -23,8 +23,6 @@ function nice_echo($var)
     double_line_break();
 }
 
-nice_echo('Hello world');
-
 $host = 'localhost'; 
 $db = 'test';
 $u_name = 'akim';
