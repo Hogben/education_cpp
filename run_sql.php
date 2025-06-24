@@ -2,11 +2,12 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="global.css">
 </head>
 <body>
     <h2>SQL Query executor</h2>
     <form method="post">
-    <textarea name='sql_text' placeholder='введите sql запрос для воборки данных'><?php echo isset($_POST['sql_text']) ? htmlspecialchars($_POST['sql_text']) : '' ?></textarea><br>
+    <textarea name='sql_text' placeholder='введите sql запрос для выборки данных'><?php echo isset($_POST['sql_text']) ? htmlspecialchars($_POST['sql_text']) : '' ?></textarea><br>
     <button type='submit' name='run_query'>Run</button>
     </form>
     <?php
@@ -61,7 +62,7 @@
             }
             catch (PDOException $e)
             {
-                echo 'Connection error: '.$e->getMessage();
+                echo '<class="error"> Connection error: '.$e->getMessage();
             }
         }
         else
