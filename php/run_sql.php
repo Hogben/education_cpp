@@ -17,7 +17,7 @@
         $sql = trim($_POST['sql_text']);
         if (!$sql)
         {
-            echo '<p>Запрос не может быть пустым.</p>';
+            echo '<div class="error">Запрос не может быть пустым.</div>';
             exit;
         }    
         if (mb_convert_case(strtok($sql, " "), MB_CASE_UPPER, "UTF-8") === 'SELECT' && strpos($sql, ';') === false)
@@ -62,12 +62,12 @@
             }
             catch (PDOException $e)
             {
-                echo '<class="error"> Connection error: '.$e->getMessage();
+                echo '<p class="error">Ошибка: ' . htmlspecialchars($e->getMessage()) . '</p>';
             }
         }
         else
         {
-            echo '<p>Запрос должен начинаться словом select.</p>';
+            echo '<div class="error">Запрос должен начинаться словом select.</div>';
             exit;
         }
     }    
