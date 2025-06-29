@@ -35,7 +35,7 @@ class BigNumber
 
     private function addPositive(string $val1, string $val2) : string
     {
-        
+
     }
 
     public function sub(BigNumber $inNumber) : BigNumber
@@ -63,8 +63,6 @@ class BigNumber
         return $this->value;
     }
 }
-
-
 
 echo new BigNumber("12222222231231231212312123")."<br>";
 echo new BigNumber("-0000000000000")."<br>";
