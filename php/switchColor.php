@@ -26,6 +26,12 @@ class ColorTheme
                 'background' => '#000000'   
             )
         );
+
+        if (isset($_COOKIE['our_theme']) && array_key_exists($_COOKIE['our_theme'], $this->c_themes))
+        {
+            $this->cur_theme = $_COOKIE['our_theme'];
+            echo $_COOKIE['our_theme'];
+        }
     }
 
     public function switchTheme ($theme)
@@ -33,7 +39,7 @@ class ColorTheme
         if (array_key_exists($theme, $this->c_themes))
         {
             $this->cur_theme = $theme;
-
+            setcookie('our_theme',$theme,time() + (24*3600), "/"); // cookie on 1 day  
         }
         else
             return false;
@@ -92,7 +98,7 @@ $allThemes = $colorTheme->getThemes();
     <button type="submit">Apply</button>    
 </form>    
 
-<p>Current theme: <?php $colorTheme->getCurTheme()['name']  ?> </p>
+<p>Current theme: <?php echo $colorTheme->getCurTheme()['name']  ?> </p>
 
 </body>
 </html>
