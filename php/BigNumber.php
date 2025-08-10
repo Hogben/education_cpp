@@ -5,8 +5,9 @@ class BigNumber
     private $value;
     private $negative;
     private $absValue; //--- модуль числа
+    private $remainder;
 
-    public function __construct(string $val)
+    public function __construct(string $val, string $remiand = '0')
     {
         if (!preg_match('/^-?\d+$/', $val))
         {
@@ -15,6 +16,7 @@ class BigNumber
         $this->value = $this->niceNumber($val);
         $this->negative = ($this->value[0] === '-') ? true : false;    
         $this->absValue = ($this->getNegative()) ? substr($this->value,1) : $this->value;
+        $this->remainder = $remiand;
     }
 
     private function niceNumber (string $val) : string
@@ -134,9 +136,6 @@ class BigNumber
         return $res;
     }
 
-    // a = 122323434
-    // b =     21212
-    // 
     public function mul(BigNumber $inNumber) : BigNumber
     {
         $res = new BigNumber('0');
@@ -156,10 +155,7 @@ class BigNumber
             return $res;
 
         if ($a === '1')
-        {
-//            return $set_negative ? new BigNumber('-'.$inNumber->getValue()) : new BigNumber( $inNumber->getValue());
             return new BigNumber($set_negative ? '-'.$inNumber->getValue() : $inNumber->getValue());
-        }
 
         $res = '0';
 
@@ -172,17 +168,41 @@ class BigNumber
             $res = $this->addSameSign($res, $t_res);
         }
 
-/*        
-        while ($a !== '1')
-        {
-            $res = $res->add(new BigNumber($b));
-            $tmp = new BigNumber($a);
-            $tmp = $tmp->sub(new BigNumber('1'));
-            $a = $tmp->getValue();
-        }
-*/
+        return ($set_negative) ? new BigNumber('-'.$res) : new BigNumber($res);
+    }
 
-        return ($set_negative) ? new BigNumber('-'.$res->getValue()) : new BigNumber($res);
+    public function div(BigNumber $inNumber) : BigNumber
+    {
+        $res = new BigNumber('0');
+
+        $set_negative = $this->getNegative() ^ $inNumber->getNegative();
+
+        $a = $this->getAbsValue();
+        $b = $inNumber->getAbsValue();
+
+        if ($b === '0')
+        {
+            throw new DivisionByZeroError("Alarm!!! Division by 0");
+        }
+
+        if ($b === '1')
+        {
+            return ($set_negative) ? new BigNumber('-'.$a) : new BigNumber($a);
+        }
+
+        if ($this->cmpAbs($a, $b) < 0)
+        {
+            return ($set_negative) ? new BigNumber('-0', $a) : new BigNumber('0', $a);
+        }
+
+        while ($this->cmpAbs($a, $b) >= 0)
+        {
+            $res = $res->add(new BigNumber('1'));
+            $t_num = new BigNumber($a);   
+            $a = (string)$t_num->sub(new BigNumber($b));  
+        }
+
+        return ($set_negative) ? new BigNumber((string)$res, $a) : new BigNumber((string)$res, $a);
     }
 
     private function cmp(string $val1, string $val2) : int
@@ -211,6 +231,11 @@ class BigNumber
         return $this->negative;
     }
 
+    public function getRemainder() : string
+    {
+        return $this->remainder;
+    }
+
     public function getAbsValue() : string
     {
         return $this->absValue;
@@ -226,19 +251,5 @@ class BigNumber
         return $this->value;
     }
 }
-
-$num1 = new BigNumber('-2222222222222222222222');
-$num2 = new BigNumber('-232233');
-//$num3 = new BigNumber('4');
-//$num4 = new BigNumber('55');
-$num12 = $num1->mul($num2);
-//$num14 = $num1->mul($num4);
-//$num32 = $num3->mul($num2);
-//$num34 = $num3->mul($num4);
-
-echo $num12->getValue().'<br>';
-//echo $num14->getValue().'<br>';
-//echo $num32->getValue().'<br>';
-//echo $num34->getValue().'<br>';
 
 ?>
