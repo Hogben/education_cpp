@@ -1,0 +1,35 @@
+body 
+{
+    font-family: 'Courier New', Courier, monospace, bold;
+    font-weight: bold;
+}
+input[type="text"]
+{
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+}
+button 
+{
+    font-family: 'Courier New', Courier, monospace;
+    font-weight: bold;
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    margin: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: calc(16% - 10px);
+    box-sizing: border-box;
+}
+.res
+{
+    font-family: 'Courier New', Courier, monospace, bold;
+    font-weight: bold;
+}
+button:hover 
+{
+    background-color: #2256c5;
+}

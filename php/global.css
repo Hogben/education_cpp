@@ -1,7 +1,5 @@
 body 
 {
-    font-family: 'Courier New', Courier, monospace, bold;
-    font-weight: bold;
     line-height: 1.5;
     margin: 0;
     padding: 20px;
@@ -20,6 +18,12 @@ textarea
 {
     width: 100%;
     height: 180px; 
+    resize: vertical; /* Позволяет изменять высоту */
+    word-wrap: break-word; /* Перенос длинных слов */
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы */
+    overflow-wrap: break-word; /* Альтернатива word-wrap */    
+    word-break: break-all; /* Принудительный перенос всех слов/чисел */
+    overflow-x: hidden; /* Скрывает горизонтальную прокрутку */    
 }    
 table 
 {
@@ -39,11 +43,15 @@ th, td
     font-weight: bold;
     color: red;
     margin-top: 10px;
+    resize: vertical; /* Позволяет изменять высоту */
+    word-wrap: break-word; /* Перенос длинных слов */
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы */
+    overflow-wrap: break-word; /* Альтернатива word-wrap */    
+    word-break: break-all; /* Принудительный перенос всех слов/чисел */
+    overflow-x: hidden; /* Скрывает горизонтальную прокрутку */    
 }        
 input[type="text"]
 {
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
     width:          80%;
     padding:        10px 15px;
     margin:         8px 0;
@@ -58,34 +66,13 @@ input[type="text"]:focus
     outline: none;
     box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
 }
-button 
-{
-    font-family: 'Courier New', Courier, monospace;
-    font-weight: bold;
-    background-color: #4285f4;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 12px 20px;
-    margin: 5px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    width: calc(20% - 10px);
-    box-sizing: border-box;
-}
-button:hover 
-{
-    background-color: #2256c5;
-}
 button:active 
 {
     transform: scale(0.98);
 }
 .res
 {
-    font-family: 'Courier New', Courier, monospace, bold;
-    font-weight: bold;
+    max-width:      80%;
     width:          80%;
     margin:         15px 0;
     padding:        10px 15px;
@@ -94,6 +81,12 @@ button:active
     font-size:      18px; 
     color: #2e7d32;
     animation: fadeIn 0.2s ease;
+    resize: vertical; /* Позволяет изменять высоту */
+    word-wrap: break-word; /* Перенос длинных слов */
+    white-space: pre-wrap; /* Сохраняет пробелы и переносы */
+    overflow-wrap: break-word; /* Альтернатива word-wrap */    
+    word-break: break-all; /* Принудительный перенос всех слов/чисел */
+    overflow-x: hidden; /* Скрывает горизонтальную прокрутку */    
 }
 /* Анимация появления */
 @keyframes fadeIn 

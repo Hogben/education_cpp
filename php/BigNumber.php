@@ -27,6 +27,7 @@ class BigNumber
     }
 
     
+
     public function add(BigNumber $inNumber) : BigNumber
     {
         $val_1 = $this->getAbsValue();
@@ -171,6 +172,24 @@ class BigNumber
         return ($set_negative) ? new BigNumber('-'.$res) : new BigNumber($res);
     }
 
+    public function power(BigNumber $inNumber) : BigNumber
+    {
+        if ($inNumber->getNegative())
+            throw new Exception("Для отрицательных степеней не реализовано"); 
+        if ($inNumber->getValue() === '0')  
+            return new BigNumber('1');
+        if ($inNumber->getValue() === '1')  
+            return new BigNumber($this->value);
+        $temp = $inNumber->sub(new BigNumber('1'));
+        $res = new BigNumber($this->value);
+        while ($temp->getValue() !== '0')
+        {
+            $res = $res->mul(new BigNumber($this->value));
+            $temp = $temp->sub(new BigNumber('1'));
+        }
+        return $res;
+    }
+    
     public function div(BigNumber $inNumber) : BigNumber
     {
         $res = new BigNumber('0');
@@ -195,14 +214,46 @@ class BigNumber
             return ($set_negative) ? new BigNumber('-0', $a) : new BigNumber('0', $a);
         }
 
-        while ($this->cmpAbs($a, $b) >= 0)
+        if ($this->cmpAbs($a, $b) == 0)
         {
-            $res = $res->add(new BigNumber('1'));
-            $t_num = new BigNumber($a);   
-            $a = (string)$t_num->sub(new BigNumber($b));  
+            return ($set_negative) ? new BigNumber('-1', new BigNumber('0')) : new BigNumber('1', new BigNumber('0'));
+        }
+/*/
+Инициализация:
+Устанавливаем частное (quotient) = 0
+Устанавливаем остаток (remainder) = делимое (a)
+Основной цикл (пока остаток ≥ делителя):
+Устанавливаем временный делитель (tempDivisor) = делитель (b)
+Устанавливаем временное частное (tempQuotient) = 1
+Цикл удвоения:
+Пока остаток ≥ (tempDivisor * 10):
+Умножаем tempDivisor на 10 (добавляем 0 в конец строки)
+Умножаем tempQuotient на 10 (добавляем 0 в конец строки)
+Вычитаем tempDivisor из остатка
+Добавляем tempQuotient к общему частному
+Результат:
+Получаем quotient и remainder
+/*/
+        $quotient = '0';
+        $remainder = $a;
+
+        while ($this->cmpAbs($remainder, $b) >= 0) 
+        {
+            $tempDivisor = $b;
+            $tempQuotient = '1';
+
+        // Удваиваем делитель, пока это возможно
+            while ($this->cmpAbs($remainder, $tempDivisor.'0') >= 0) 
+            {
+                $tempDivisor .= '0';
+                $tempQuotient .= '0';
+            }
+
+            $remainder = (new BigNumber($remainder))->sub(new BigNumber($tempDivisor))->getValue();
+            $quotient = (new BigNumber($quotient))->add(new BigNumber($tempQuotient))->getValue();
         }
 
-        return ($set_negative) ? new BigNumber((string)$res, $a) : new BigNumber((string)$res, $a);
+        return ($set_negative) ? new BigNumber($quotient, $remainder) : new BigNumber($quotient, $remainder);
     }
 
     private function cmp(string $val1, string $val2) : int

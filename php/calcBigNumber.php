@@ -35,6 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
                 case 'div':
                     $res = (string)$n1->div($n2);
                     break;
+                case 'pwr':
+                    $res = (string)$n1->power($n2);
+                    break;
                 default:
                     $res = "Неизвеcтная операция";                    
             }
@@ -58,7 +61,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
 <html>
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet   " href="global.css"> <!-- в стили добавить для input -->
+    <link rel="stylesheet   " href="global.css">    <!-- глобальный стиль -->
+    <link rel="stylesheet   " href="calc.css">      <!-- местный стиль -->
     <title>Калькулятор больших чисел</title>
 </head>
 <body>
@@ -72,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST')
         <button type="submit" name="operation" value="sub">Вычитание</button>     
         <button type="submit" name="operation" value="mul">Умножение</button>     
         <button type="submit" name="operation" value="div">Деление</button>     
+        <button type="submit" name="operation" value="pwr">Степень</button>     
 
     </form>    
     <?php if ($res !== ''): ?>

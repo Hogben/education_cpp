@@ -7,4 +7,8 @@ echo '<br><a href="show_categories.php">Посмотреть категории<
 echo '<br><a href="show_product.php">Посмотреть продукты</a>';
 echo '<br><a href="run_sql.php">Выполнить SQL</a>';
 
+echo '<br>';
+echo '<br>';    
+
+echo '<br><a href="calcBigNumber.php">Калькулятор больших чисел</a>';
 ?>
