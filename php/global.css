@@ -52,6 +52,7 @@ th, td
 }        
 input[type="text"]
 {
+    max-width:      80%;
     width:          80%;
     padding:        10px 15px;
     margin:         8px 0;
