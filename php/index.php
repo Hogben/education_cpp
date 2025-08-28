@@ -11,4 +11,9 @@ echo '<br>';
 echo '<br>';    
 
 echo '<br><a href="calcBigNumber.php">Калькулятор больших чисел</a>';
+
+echo '<br>';
+echo '<br>';    
+
+echo '<br><a href="show_matrix.php">Наши матрицы</a>';
 ?>

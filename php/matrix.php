@@ -1,3 +1,4 @@
+
 <?php
 
 class Matrix {
@@ -31,13 +32,23 @@ class Matrix {
             $this->colsLabel[$i] = $this->createLabel($this->colsLabelType, $i);
     }
 
+    private function makeAlpha($idx) // 0 - A 25 - Z 26 - AA 27 AB ...
+    {
+        $res = '';
+        while ($idx >= 0)
+        {
+            $res = chr(65 + ($idx % 26)).$res;
+            $idx = floor($idx / 26) - 1;
+        }
+        return $res;
+    }
 
-    //  A...Z AAABAC... AZ 
     private function createLabel($type, $idx)
     {
-        // now only numeric
         if ($type === 'numeric')
             return $idx + 1;
+        else
+            return $this->makeAlpha($idx);
     }
 
     private function initData($val)
@@ -70,17 +81,37 @@ class Matrix {
         return $this->cols;
     }
 
-    public setShowColsLabel($show = true)
+    public function setShowColsLabel($show = true)
     {
         $this->showColsLabel = $show;
     }
 
-    public setShowRowsLabel($show = true)
+    public function setShowRowsLabel($show = true)
     {
         $this->showRowsLabel = $show;
     }
 
-    public function draw()
+    public function setRowLabel($row, $label) : bool
+    {
+        if (isset ($this->rowsLabel[$row])) 
+        {
+            $this->rowsLabel[$row] = $label;
+            return true;
+        }
+        return false;
+    }
+
+    public function setColLabel($col, $label) : bool
+    {
+        if (isset ($this->colsLabel[$col])) 
+        {
+            $this->colsLabel[$col] = $label;
+            return true;
+        }
+        return false;
+    }
+
+    public function make()
     {
         $html = '<table class="matrix" border="1">';
         
@@ -93,10 +124,21 @@ class Matrix {
                 $html .= '<th>'.htmlspecialchars($colLabel).'</th>';
             $html .= '</tr>';
         }
-
         //--- нарисовать матрицу с учетом видимости подписей у строк
-        
+        foreach ($this->data as $rowIdx => $row)
+        {
+            $html .= '<tr>';
+            if ($this->showRowsLabel)
+                $html .= '<th>'.htmlspecialchars($this->rowsLabel[$rowIdx]).'</th>';
+            foreach ($row as $val)
+                $html .= '<th>'.htmlspecialchars($val).'</th>';
+            $html .= '</tr>';
+        }
+
+        $html .= '</table>';
+        return $html;
     }
+
 }
 
 ?>
