@@ -1,5 +1,6 @@
 <?php
 
+require_once 'matrix.php';
 require_once 'BattleShip.php';
 
 class SeaBattle 
@@ -55,16 +56,79 @@ class SeaBattle
 
     private function placeShipsRandom($board, $ships)  //--- всегда комп и по желанию игрок
     {
-        foreach ($this->computerShips as $compShip)        
+        foreach ($ships as $ship)        
         {
             $placed = false;
             while (!$placed)
             {
-                
+                $row = rand(0, $board->seaSize - 1);
+                $col = rand(0, $board->seaSize - 1);
+
+                $vertical = (rand(0,1) == 0);
+                if ($this->canPlaceShip($ship, $row, $col, $vertical, $ships))
+                {
+                    $pos = [];
+                    for ($i = 0; $i < $shipSize; $i++)
+                    {
+                        if ($vertical)
+                            $pos[] = ['row' => $row + $i, 'col' => $col];
+                        else
+                            $pos[] = ['row' => $row, 'col' => $col + $i];
+                        if ($board === $playerBoard)
+                    }                    
+                    $ship->setPosition($pos); 
+                    if ($board === $playerBoard)
+                    {
+                       ($vertical) ? drawShip($row + $i, $col) : drawShip($row, $col + $i);    
+                    }
+                    $placed = true;
+                }
             }
         }
     }
 
+    private function drawShip($row, $col, $val = '@', $board = $playerBoard)
+    {
+        $board->setValue($row, $col, $val);
+    }
+
+    private function canPlaceShip($ship, $row, $col, $vertical, $ships) : bool
+    {
+        $shipSize = $ship->getSize();
+        if ($vertical)
+        {
+            if ($row + $shipSize > $board->seaSize) return false;
+        }
+        else
+        {
+            if ($col + $shipSize > $board->seaSize) return false;
+        }    
+
+        // ------- перебрать действующие корабли и проверить пересечение координат
+        for ($i = 0; $i < $shipSize; $i++)
+        {
+            $checkRow = $vertical ? $row + $i : $row;
+            $checkCol = $vertical ? $col : $col + $i;
+            foreach ($ships as $realShip)
+            {
+                if ($realShip === $ship)    break;
+                for ($r = max(0, $checkRow - 1); $r < min($board->seaSize - 1, $checkRow + 1); $r++)
+                {
+                    for ($c = max(0, $checkCol - 1); $c < min($board->seaSize - 1, $checkCol + 1); $c++)
+                    {
+                        for ($i = 0; $i < $shipSize; $i++)
+                        {
+                            foreach($realShip->getPosition() as $pos)
+                            {
+                                if ($pos['row'] === $r && $pos['col'] === $c) return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }
 
 ?>

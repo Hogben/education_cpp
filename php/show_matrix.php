@@ -57,13 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($colTypeLabel === 'alpha')
     {
-        //-----------  1   2   3   4   5                   10
-        $cyr_label = ['А','Б','В','Г','Д','Е','Ж','З','И','К'];
+        $cyr_label = 'АБВГДЕЖЗИК';
         while (true)
         {
-            for ($i = 0; $i < count($cyr_label); $i++)
+            for ($i = 0; $i < mb_strlen($cyr_label); $i++)
             {
-                if (!$matrix->setColLabel($i, $cyr_label[$i]))  break;
+                if (!$matrix->setColLabel($i, mb_substr($cyr_label, $i, 1)))  break;
             }
             break;
         }
