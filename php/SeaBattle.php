@@ -52,8 +52,8 @@ class SeaBattle
             $shipSize = $ship->getSize();
             while (!$placed)
             {
-                $row = rand(0, $board->seaSize - 1);
-                $col = rand(0, $board->seaSize - 1);
+                $row = rand(0, $board->getRows() - 1);
+                $col = rand(0, $board->getCols() - 1);
 
                 $vertical = (rand(0,1) == 0);
 
@@ -88,11 +88,11 @@ class SeaBattle
         $shipSize = $ship->getSize();
         if ($vertical)
         {
-            if ($row + $shipSize > $board->seaSize) return false;
+            if ($row + $shipSize > $board-getRows()) return false;
         }
         else
         {
-            if ($col + $shipSize > $board->seaSize) return false;
+            if ($col + $shipSize > $board->getCols()) return false;
         }    
 
         // ------- перебрать действующие корабли и проверить пересечение координат
@@ -103,9 +103,9 @@ class SeaBattle
             foreach ($ships as $realShip)
             {
                 if ($realShip === $ship)    break;
-                for ($r = max(0, $checkRow - 1); $r < min($board->seaSize - 1, $checkRow + 1); $r++)
+                for ($r = max(0, $checkRow - 1); $r < min($board->getRows() - 1, $checkRow + 1); $r++)
                 {
-                    for ($c = max(0, $checkCol - 1); $c < min($board->seaSize - 1, $checkCol + 1); $c++)
+                    for ($c = max(0, $checkCol - 1); $c < min($board->getCols() - 1, $checkCol + 1); $c++)
                     {
                         for ($i = 0; $i < $shipSize; $i++)
                         {
@@ -149,14 +149,19 @@ class SeaBattle
         //---------- оптимизировать через getValue
         if ($config['sea']['board']['empty'] !== $computerBoard->getValue($row, $col))
                return ['result' = 'Уже сюда стрелял!', 'hit' = false, 'game_over' = false];
+        return shootResult($this->computerBoard, $this->computerShips, $row, $col);
+    }
+
+    private function shootResult($board, $Ships, $row, $col)
+    {
         $hit = false;
         $dead = false;
         $check_ship = null;
-        foreach($this->computerShips as $ship)
+        foreach($Ships as $ship)
         {
             if ($ship->checkHit($row, $col))
             {
-                $this->computerBoard->setVlalue($row, $col, $config['sea']['board']['hit']);
+                $board->setVlalue($row, $col, $config['sea']['board']['hit']);
                 $hit = true;
                 $dead = $ship->isDead(); 
                 $check_ship = $ship;
@@ -165,14 +170,15 @@ class SeaBattle
         }
         if ($hit)
         {
-            $this->computerBoard->setVlalue($row, $col, $config['sea']['board']['hit']);
+            $board->setVlalue($row, $col, $config['sea']['board']['hit']);
             if ($dead)
             {
+                $msg = ($board === $this->computerBoard) ? 'Игрок победил!' : 'Компьюер думает что победил...';
                 //-------- проверить весь флот на живучесть
-                if ($this->checkShips($this->computerShips) === true)
-                    return ['result' = 'Игрок победил!', 'hit' = true, 'game_over' = true];
+                if ($this->checkGameOver($Ships) === true)
+                    return ['result' = $msg, 'hit' = true, 'game_over' = true];
                 //--------- нала отметить вокруг корябля как обстреляно
-                $this->markDeadShip($this->computerBoard, $check_ship)
+                $this->markDeadShip($board, $check_ship)
                 return ['result' = 'Убил!', 'hit' = true, 'game_over' = false];
             }
             else
@@ -180,12 +186,13 @@ class SeaBattle
         }
         else
         {
-            $this->computerBoard->setVlalue($row, $col, $config['sea']['board']['miss']);
+            $board->setVlalue($row, $col, $config['sea']['board']['miss']);
             return ['result' = 'Мимо!', 'hit' = false, 'game_over' = false];
         }
     }
 
-    private function checkShips($Ships)
+
+    private function checkGameOver($Ships)
     {
         foreach ($Ships as $ship)
         {
@@ -201,9 +208,9 @@ class SeaBattle
         {
             $checkRow = $ship_position['vertical'] ? $row + $i : $row;
             $checkCol = $ship_position['vertical'] ? $col : $col + $i;
-            for ($r = max(0, $checkRow - 1); $r < min($board->seaSize - 1, $checkRow + 1); $r++)
+            for ($r = max(0, $checkRow - 1); $r < min($board->getRows() - 1, $checkRow + 1); $r++)
             {
-                for ($c = max(0, $checkCol - 1); $c < min($board->seaSize - 1, $checkCol + 1); $c++)
+                for ($c = max(0, $checkCol - 1); $c < min($board->getCols() - 1, $checkCol + 1); $c++)
                 {
                     if ($Board->getValue($r,$c) === $config['sea']['board']['hit']) continue;
                     $Board->setValue($r,$c,$config['sea']['board']['miss']);
@@ -211,6 +218,43 @@ class SeaBattle
             }        
         }
     }
+
+    public function computerShoot($smart = false)
+    {
+        $row = null;
+        $col = null;
+       if ($smart)
+        {
+            return ['result' = 'Надо поумнеть!', 'hit' = false, 'game_over' = false];
+        }
+        else
+        {
+            do 
+            {
+                $row = rand(0,$board->getRows() - 1);
+                $col = rand(0,$board->getCols() - 1);
+
+            } while ($playerBoard->getValue($row, $col) != $config['sea']['board']['empty'])
+
+            return shootResult($this->playerBoard, $this->playerShips, $row, $col);
+        }
+    }
+
+    public function drawPlayerBoard()
+    {
+        return $playerBoard->make();
+    }
+
+    public function drawComputerBoard()
+    {
+        return $playerBoard->make();
+    }
+
+    public function Start()
+    {
+        return (count($config['ships']) === $this->$curPlayerShip);
+    }
+    
 }
 
 ?>
