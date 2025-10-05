@@ -1,10 +1,11 @@
 <?php
 
-class BattleShip {
+class BattleShip 
+{
     private $size; // 1-4
     private $name;
     private $hit = 0;
-    private $positon = []; // row,col
+    private $position = []; // row,col
     private $vertical = false;
     
     public function __construct($size, $name)
@@ -32,7 +33,7 @@ class BattleShip {
 
     public function getPosition()
     {
-        return ['pos' = $this->position, 'vertical' = $this->vertical];
+        return ['pos' => $this->position, 'vertical' => $this->vertical];
     }
 
     public function isDead()

@@ -57,6 +57,11 @@ class Matrix {
             $this->data[$i] = array_fill(0, $this->cols, $val);
     }
 
+    public function fillMatrix($val) 
+    {
+        $this->initData($val);
+    }
+
     public function setValue($row, $col, $val) : bool
     {
         if (isset ($this->data[$row][$col])) {
@@ -131,7 +136,11 @@ class Matrix {
             if ($this->showRowsLabel)
                 $html .= '<th>'.htmlspecialchars($this->rowsLabel[$rowIdx]).'</th>';
             foreach ($row as $val)
-                $html .= '<th>'.htmlspecialchars($val).'</th>';
+            {
+                // Исправление: проверка на null и замена на неразрывный пробел
+                $displayVal = ($val === null) ? '&nbsp;' : htmlspecialchars($val);
+                $html .= '<td>'.$displayVal.'</td>';
+            }            
             $html .= '</tr>';
         }
 
