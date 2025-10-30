@@ -116,6 +116,25 @@ class Matrix {
         return false;
     }
 
+    public function getRowLabel($row)
+    {
+        if (isset ($this->rowsLabel[$row])) 
+        {
+            return $this->rowsLabel[$row];
+        }
+        return null;
+    }
+
+    public function getColLabel($col)
+    {
+        if (isset ($this->colsLabel[$col])) 
+        {
+            return $this->colsLabel[$col];
+        }
+        return null;
+    }
+
+
     public function make()
     {
         $html = '<table class="matrix" border="1">';

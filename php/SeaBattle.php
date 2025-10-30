@@ -3,6 +3,7 @@
 require_once 'seaBattleConfig.php';
 require_once 'matrix.php';
 require_once 'BattleShip.php';
+require_once 'SmartShoot.php';
 
 class SeaBattle 
 {
@@ -13,6 +14,8 @@ class SeaBattle
     private $curPlayerShip = 0;
     private $gameOver = false;
     private $vertical = false;
+    private $smartShoot = null;
+    private $log = null;
 
     public function __construct()
     {
@@ -82,7 +85,7 @@ class SeaBattle
                             $pos[] = ['row' => $row + $i, 'col' => $col];
                         else
                             $pos[] = ['row' => $row, 'col' => $col + $i];
-//                        if ($board === $this->playerBoard)    // закоментить для читерства
+                        if ($board === $this->playerBoard)    // закоментить для читерства
                         {
                             ($vertical) ? $this->drawShip($row + $i, $col, $config['sea']['board']['ship'], $board) : $this->drawShip($row, $col + $i, $config['sea']['board']['ship'], $board);    
                         }
@@ -173,8 +176,8 @@ class SeaBattle
 
         //---------- оптимизировать через getValue
         if ($config['sea']['board']['miss'] === $this->computerBoard->getValue($row, $col) || $config['sea']['board']['hit'] === $this->computerBoard->getValue($row, $col))
-            return ['result' => 'Уже сюда стрелял!', 'hit' => false, 'game_over' => false];
-        return shootResult($this->computerBoard, $this->computerShips, $row, $col);
+            return ['result' => 'Уже сюда стрелял!', 'hit' => false, 'game_over' => false, 'dead' => false];
+        return $this->shootResult($this->computerBoard, $this->computerShips, $row, $col);
     }
 
     private function shootResult($board, $Ships, $row, $col)
@@ -202,42 +205,187 @@ class SeaBattle
             {
                 $msg = ($board === $this->computerBoard) ? 'Игрок победил!' : 'Компьюер думает что победил...';
                 //-------- проверить весь флот на живучесть
-                if ($this->checkGameOver($Ships) === true)
-                    return ['result' => $msg, 'hit' => true, 'game_over' => true];
+                if ($this->checkDeadShips($Ships) === true)
+                    return ['result' => $msg, 'hit' => true, 'game_over' => true, 'dead' => true];
                 //--------- нала отметить вокруг корябля как обстреляно
                 $this->markDeadShip($board, $check_ship);
-                return ['result' => 'Убил!', 'hit' => true, 'game_over' => false];
+                return ['result' => 'Убил!', 'hit' => true, 'game_over' => false, 'dead' => true];
             }
             else
-                return ['result' => 'Ранил!', 'hit' => true, 'game_over' => false];
+                return ['result' => 'Ранил!', 'hit' => true, 'game_over' => false, 'dead' => true];
         }
         else
         {
             $board->setValue($row, $col, $config['sea']['board']['miss']);
-            return ['result' => 'Мимо!', 'hit' => false, 'game_over' => false];
+            return ['result' => 'Мимо!', 'hit' => false, 'game_over' => false, 'dead' => false];
         }
     }
 
-    private function checkGameOver($Ships)
+    public function computerShoot($smart = true)
+    {
+        global $config;
+
+        $row = null;
+        $col = null;
+
+        if ($this->smartShoot === null || !$smart)
+        {
+            do 
+            {
+                $row = rand(0,$this->playerBoard->getRows() - 1);
+                $col = rand(0,$this->playerBoard->getCols() - 1);
+
+            } while ($this->playerBoard->getValue($row, $col) === $config['sea']['board']['hit'] || $this->playerBoard->getValue($row, $col) === $config['sea']['board']['miss']);
+
+//            $this->logData .= "\nshoot: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+            $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
+            if ($res['game_over'])
+                return $res;
+            else
+            {
+                if ($res['hit'])
+                {
+//                    $this->logData .= "\nhit: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+                    if (!$res['dead'])  $this->smartShoot = new SmartShoot($row, $col);
+                    return $this->computerShoot($smart);
+                }
+                else
+                {
+//                    $this->logData .= "\nmiss: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+                    return $res;
+                }
+            }
+        }
+        else
+        {
+            $shootInfo = $this->smartShoot->getInfo();
+            
+            $direction = ['left' => true, 'right' => true, 'up' => true, 'down' => true];
+
+            
+            if ($shootInfo['niceShoot'] !== null)
+            {
+                $row = $shootInfo['niceShoot']['row'];
+                $col = $shootInfo['niceShoot']['col'];
+//                $this->logData .= "\nследующий выстрел: ".$this->getPrintCoord($this->playerBoard, $row, $col);            
+            }
+            else
+            {
+                if ($shootInfo['vertical'] !== null)
+                {
+                    if ($shootInfo['vertical'])
+                    {
+                        $direction['left'] = false;
+                        $direction['right'] = false;
+                    }
+                    else
+                    {
+                        $direction['up'] = false;
+                        $direction['down'] = false;
+                    }
+                }
+
+                $pos = end($shootInfo['pos']);
+
+                if ($shootInfo['inc'] !== null)
+                {
+                    if (
+                        ($shootInfo['vertical'] && $shootInfo['inc'] && $pos['row'] === $this->playerBoard->getRows() - 1) || 
+                        ($shootInfo['vertical'] && !$shootInfo['inc'] && $pos['row'] === 0) ||
+                        (!$shootInfo['vertical'] && $shootInfo['inc'] && $pos['col'] === $this->playerBoard->getCols() - 1) || 
+                        (!$shootInfo['vertical'] && !$shootInfo['inc'] && $pos['col'] === 0) 
+                    )
+                    {
+                        $pos = $shootInfo['pos'][0];
+                        //-------- set inc in smartShoot !!
+                        $shootInfo['inc'] = !$shootInfo['inc'];
+                    }
+                    if ($shootInfo['vertical'])
+                    {
+                        $row = $pos['row'] + ($shootInfo['inc'] ? 1 : -1);
+                        $col = $pos['col'];
+                    }
+                    else
+                    {
+                        $col = $pos['col'] + ($shootInfo['inc'] ? 1 : -1);
+                        $row = $pos['row'];
+                    }
+                }
+                else    //----- было 1 попадание
+                {
+                    if ($pos['row'] === 0)
+                        $direction['up'] = false;
+                    if ($pos['row'] === $this->playerBoard->getRows() - 1)
+                        $direction['down'] = false;
+                    if ($pos['col'] === 0)
+                        $direction['left'] = false;
+                    if ($pos['col'] === $this->playerBoard->getCols() - 1)
+                        $direction['right'] = false;
+
+                    if ($direction['up'] && $direction['down'])
+                    {
+                        $row = $pos['row'] + (rand(0,1) == 0 ? 1 : -1);
+                    }
+                    else
+                    {
+                        if ($direction['up'])
+                            $row = $pos['row'] - 1;
+                        else    
+                            $row = $pos['row'] + 1;
+                    }
+                    if ($direction['left'] && $direction['right'])
+                    {
+                        $col = $pos['col'] + (rand(0,1) == 0 ? 1 : -1);
+                    }
+                    else
+                    {
+                        if ($direction['left'])
+                            $col = $pos['col'] - 1;
+                        else    
+                            $col = $pos['col'] + 1;
+                    }
+                }
+            }
+
+//            $this->logData .= "\nshoot: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+            $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
+            if ($res['game_over'])
+                return $res;
+            else
+            {
+                if ($res['hit'])
+                {
+//                    $this->logData .= "\nhit: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+                    if ($res['dead'])   
+                        $this->smartShoot = null;           
+                    else
+                        $this->smartShoot->addPos($row, $col);
+                    return $this->computerShoot($smart);
+                }
+                else
+                {
+//                    $this->logData .= "\nmiss: ".$this->getPrintCoord($this->playerBoard, $row, $col);
+                    $this->smartShoot->calcNiceShoot($row, $col);
+                    return $res;
+                }
+            }
+        }
+    }
+
+
+    private function checkDeadShips($Ships)
     {
         foreach ($Ships as $ship)
         {
             if (!$ship->isDead()) return false;
         }
-        return true;
+        $this->gameOver = true;
+        return $this->gameOver;
     }
 
     public function isGameOver()
     {
-        foreach ($this->playerShips as $ship)
-        {
-            if (!$ship->isDead()) return false;
-        }
-        foreach ($this->computerShips as $ship)
-        {
-            if (!$ship->isDead()) return false;
-        }
-        return true;
+        return $this->gameOver;
     }
 
     private function markDeadShip($Board, $ship)
@@ -257,29 +405,6 @@ class SeaBattle
                     $Board->setValue($r,$c,$config['sea']['board']['miss']);
                 }
             }        
-        }
-    }
-
-    public function computerShoot($smart = false)
-    {
-        global $config;
-
-        $row = null;
-        $col = null;
-       if ($smart)
-        {
-            return ['result' => 'Надо поумнеть!', 'hit' => false, 'game_over' => false];
-        }
-        else
-        {
-            do 
-            {
-                $row = rand(0,$board->getRows() - 1);
-                $col = rand(0,$board->getCols() - 1);
-
-            } while ($this->playerBoard->getValue($row, $col) != $config['sea']['board']['empty']);
-
-            return shootResult($this->playerBoard, $this->playerShips, $row, $col);
         }
     }
 
@@ -330,11 +455,15 @@ class SeaBattle
             $board->setColLabel($i, $cyr_label[$i]);
     }
 
-
     public function getColByName($char)
     {
         $cyr_label = ['А','Б','В','Г','Д','Е','Ж','З','И','К'];
         return array_search($char, $cyr_label);
+    }
+
+    private function getPrintCoord($board, $row, $col)
+    {
+        return $board->getColLabel($col).($row+1);
     }
 }
 

@@ -1,5 +1,8 @@
 <?php
 
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 require_once 'SeaBattle.php';
 
 session_start();
@@ -9,7 +12,7 @@ if(!isset($_SESSION['game']))
 }
 
 $game = $_SESSION['game'];
-$message = 'Начало игры';
+$message = 'Расстановка кораблей';
 
 if(isset($_POST['action']))
 {
@@ -27,6 +30,9 @@ if(isset($_POST['action']))
                     // ДОБАВЛЕНО: вызов метода размещения корабля
                     if ($game->placePlayerShip($row, $col)) 
                     {
+                      if ($game->Start())
+                        $message = 'Начало игры. Стреляй!';
+                      else
                         $message = 'Корабль размещен!';
                     } 
                     else 
@@ -42,15 +48,10 @@ if(isset($_POST['action']))
             break;
         case 'qiuck_place_ship':
             $game->quickPlaceShip();            
+            $message = 'Начало игры. Стреляй!';
             break;
         case 'shiftOrintation':
             $game->shiftOrientation();
-            break;
-        case 'start':
-            if ($game->Start())
-                $message = 'Начало игры, удачи!';
-            else
-                $message = 'Игрок не расставил весь флот!';
             break;
         case 'shoot':
             if (isset($_POST['coord']))
@@ -61,7 +62,26 @@ if(isset($_POST['action']))
                     $row = $coord[2] - 1;
                     $col = $game->getColByName($coord[1]);
                     $res = $game->playerShoot($row, $col);
-                    $message = $res['result'];
+                    if ($res['game_over'])
+                    {
+                        $message = 'Поздравляем! Вы победили!!!';
+                    }
+                    else
+                    {
+                        $message = $res['result'];
+                        if (!$res['hit'])
+                        {
+                            $res = $game->computerShoot();
+                            if ($res['game_over'])
+                            {
+                                $message = 'Эх, Вы проиграли :`(';
+                            }
+                            else
+                            {
+                                $message = 'Компьютер -> '.$res['result'];
+                            }
+                        }    
+                    }
                 }
                 else 
                 {
@@ -144,6 +164,11 @@ if(isset($_POST['action']))
         <form method="POST">
             <button type="submit" name="action" value='restart'>Начать заново...</button>
         </form>    
+        <textarea id="shoot_log" readonly style="width:100%; height: 200px; resize:vertical; font-famaly: monospace; font-size: 12px; padding: 10px">
+        <?php
+           echo htmlspecialchars($game->getLogInfo());
+        ?>
+        </textarea>
     </div>
 
     <script>
