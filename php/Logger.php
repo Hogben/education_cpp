@@ -1,6 +1,6 @@
 <?php
 
-class Logger
+class Logger 
 {
     private $logDir;
     private $logName;
@@ -52,6 +52,12 @@ class Logger
         $this->log($msg, 'WARNING');
     }
 
+    public function clearLog()
+    {
+        $logFile = $this->getLogName();        
+        if (file_exists($logFile))  file_put_contents($logFile, '');
+    }
+
     // ----- вернуть текстовый массив из файла лога с указанным количеством последних строк, если 0 - то вернуть весь лог
     public function getLogText($line = 0)
     {
@@ -64,7 +70,7 @@ class Logger
         $context = array_filter($context);
 
         if ($line > 0)
-            $context = array_slice($context, -$lines);
+            $context = array_slice($context, -$line);
 
         return $context;
     }
@@ -90,7 +96,7 @@ class Logger
             $oldFile = $this->getLogNameRotate($i);
             $newFile = $this->getLogNameRotate($i + 1);
 
-            if (file_exists($oldFile)
+            if (file_exists($oldFile))
             {
                 if ($i + 1 >= $this->fileCount)
                 {

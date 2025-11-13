@@ -12,6 +12,7 @@ class BattleShip
     {
         $this->name = $name; 
         $this->size = $size; 
+        
     }
 
     public function getSize()

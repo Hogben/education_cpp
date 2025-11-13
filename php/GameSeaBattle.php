@@ -154,8 +154,8 @@ if(isset($_POST['action']))
             <form method="POST">
                 <div>
                     <label>Введите координату (А1-К10, можно с маленькими буквами): </label>
-                    <input type="text" name="coord" required>
-                    <button type="submit" name="action" value='shoot'>Огонь!</button>
+                    <input type="text" name="coord" id="coord_input" required>
+                    <button type="submit" name="action" value='shoot' id="shoot_btn">Огонь!</button>
                 </div>
             </form>    
         <?php else: ?>    
@@ -164,9 +164,9 @@ if(isset($_POST['action']))
         <form method="POST">
             <button type="submit" name="action" value='restart'>Начать заново...</button>
         </form>    
-        <textarea id="shoot_log" readonly style="width:100%; height: 200px; resize:vertical; font-famaly: monospace; font-size: 12px; padding: 10px">
+        <textarea id="shoot_log" readonly style="width:80%; height: 400px; resize:vertical; font-famaly: monospace; font-size: 12px; padding: 10px">
         <?php
-           echo htmlspecialchars($game->getLogInfo());
+           echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
         ?>
         </textarea>
     </div>
@@ -178,7 +178,43 @@ if(isset($_POST['action']))
                 coordInput.focus();
                 coordInput.select();
             }
-        });
+
+            const textarea = document.getElementById('shoot_log');
+            const savedHeight = localStorage.getItem('shoot_log_height');
+            if (savedHeight) {
+                textarea.style.height = savedHeight;
+            }
+            
+            textarea.addEventListener('input', function() {
+                localStorage.setItem('shoot_log_height', textarea.style.height);
+            });
+            
+            textarea.addEventListener('mouseup', function() {
+                localStorage.setItem('shoot_log_height', textarea.style.height);
+            });
+
+            const coorInput = document.getElementById('coord_input');
+            const btnShoot = document.getElementById('shoot_btn');
+
+            function coorValidate(coor)
+            {
+                return /^[АБВГДЕЖЗИКабвгдежзик]([1-9]|10)$/i.test(coor);
+            }
+
+            function updateShootState()
+            {
+                const cInput = coorInput.value.trim();
+                const isEnable = coorValidate(cInput);
+
+                btnShoot.disabled = !isEnable;
+            }
+
+            coorInput.addEventListener('input', updateShootState);
+            updateShootState();
+            coorInput.focus();
+            
+        });        
+
     </script>
 
 </body>

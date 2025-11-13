@@ -6,12 +6,16 @@ class SmartShoot
     private $position = []; // row,col
     private $incr; // добавлять или отминать от предыдущего
     private $niceShoot = null;
+    private $log;
 
-    public function __construct($row, $col)
+    private $miss_count = 0;
+
+    public function __construct($row, $col, $log = null)
     {
         $this->incr = null;
         $this->vertical = null;
         $this->position[] = ['row' => $row, 'col' => $col];
+        $this->log = $log;
     }
 
     public function addPos($row, $col)
@@ -27,6 +31,7 @@ class SmartShoot
         {
             $this->incr = ($col > $this->position[0]['col']);
         }
+        $this->log->debug("Smart set vertical: ".$this->vertical." and add x = ".($col + 1)." y = ".($row+1));
     }
 
     public function calcNiceShoot($row, $col) // --- при промахе
@@ -59,6 +64,7 @@ class SmartShoot
                     $this->niceShoot = ['row' => $row, 'col' => max(array_column($this->position, 'col')) + 1];
                 }
             }
+            $this->log->debug("Calc nice shoot at x = ".($this->niceShoot['col'] + 1)." y = ".($this->niceShoot['row'] + 1));
         }
     }
 
