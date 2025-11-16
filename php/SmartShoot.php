@@ -1,5 +1,7 @@
 <?php
 
+require_once 'seaBattleConfig.php';
+
 class SmartShoot
 {
     private $vertical;
@@ -20,6 +22,8 @@ class SmartShoot
 
     public function addPos($row, $col)
     {
+        global $config;
+
         $this->position[] = ['row' => $row, 'col' => $col];
         $this->niceShoot = null;
         $this->vertical = ($col === $this->position[0]['col']);
@@ -31,11 +35,14 @@ class SmartShoot
         {
             $this->incr = ($col > $this->position[0]['col']);
         }
-        $this->log->debug("Smart set vertical: ".$this->vertical." and add x = ".($col + 1)." y = ".($row+1));
+        if ($config['debug'])
+            $this->log->debug("Smart set vertical: ".$this->vertical." and add x = ".($col + 1)." y = ".($row+1));
     }
 
     public function calcNiceShoot($row, $col) // --- при промахе
     {
+        global $config;
+
         if ($this->vertical !== null)
         {
             if ($this->vertical)    
@@ -64,7 +71,8 @@ class SmartShoot
                     $this->niceShoot = ['row' => $row, 'col' => max(array_column($this->position, 'col')) + 1];
                 }
             }
-            $this->log->debug("Calc nice shoot at x = ".($this->niceShoot['col'] + 1)." y = ".($this->niceShoot['row'] + 1));
+            if ($config['debug'])
+                $this->log->debug("Calc nice shoot at x = ".($this->niceShoot['col'] + 1)." y = ".($this->niceShoot['row'] + 1));
         }
     }
 

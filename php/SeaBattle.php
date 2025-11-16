@@ -16,6 +16,8 @@ class SeaBattle
     private $gameOver = false;
     private $vertical = false;
     private $smartShoot = null;
+    private $cyr_label = ['А','Б','В','Г','Д','Е','Ж','З','И','К'];
+
     public $log = null;
 
     public function __construct()
@@ -192,6 +194,8 @@ class SeaBattle
 
         if ($board === $this->playerBoard)
             $this->log->info("Компьютер стреляет: ".$this->getPrintCoord($this->playerBoard, $row, $col));
+        else
+            $this->log->info("Игрок стреляет: ".$this->getPrintCoord($this->playerBoard, $row, $col));
 
         $hit = false;
         $dead = false;
@@ -204,8 +208,9 @@ class SeaBattle
                 $hit = true;
                 $dead = $ship->isDead(); 
                 $check_ship = $ship;
-
-                $this->log->debug("Попали в размер: ".$ship->getSize().", корабль: ".$ship->getName().", убит: ".($dead ? 'да' : 'нет'));
+    
+                if ($config['debug'])
+                    $this->log->debug("Попали в размер: ".$ship->getSize().", корабль: ".$ship->getName().", убит: ".($dead ? 'да' : 'нет'));
 
                 break;
             }
@@ -215,10 +220,11 @@ class SeaBattle
             $board->setValue($row, $col, $config['sea']['board']['hit']);
             if ($dead)
             {
+                $this->log->info("Убил!!!");
                 //-------- проверить весь флот на живучесть
                 if ($this->checkDeadShips($Ships) === true)
                 {
-                    $this->log->debug("Конец игры!!!");
+                    $this->log->info("Конец игры!!!");
                     $msg = ($board === $this->computerBoard) ? 'Игрок победил!' : 'Компьюер думает что победил...';
                     return ['result' => $msg, 'hit' => true, 'game_over' => true, 'dead' => true];
                 }
@@ -227,10 +233,14 @@ class SeaBattle
                 return ['result' => 'Убил!', 'hit' => true, 'game_over' => false, 'dead' => true];
             }
             else
+            {
+                $this->log->info("Попал...");
                 return ['result' => 'Ранил!', 'hit' => true, 'game_over' => false, 'dead' => false];
+            }
         }
         else
         {
+            $this->log->info("Мимо.");
             $board->setValue($row, $col, $config['sea']['board']['miss']);
             return ['result' => 'Мимо!', 'hit' => false, 'game_over' => false, 'dead' => false];
         }
@@ -259,42 +269,31 @@ class SeaBattle
             {
                 if ($res['hit'])
                 {
-                    if ($res['dead'])  
-                    {
-                        $this->log->info("Убил!!!");
-                    }
-                    else
-                    {
-                        $this->log->info("Попал...");
+                    if (!$res['dead'])  
                         $this->smartShoot = new SmartShoot($row, $col, $this->log);
-                    }
                     return $this->computerShoot($smart);
                 }
                 else
-                {
-                    $this->log->info("Мимо.");
                     return $res;
-                }
             }
         }
         else
         {
             $shootInfo = $this->smartShoot->getInfo();
-            
-            $direction = ['left' => true, 'right' => true, 'up' => true, 'down' => true];
 
-            
+            $direction = ['left' => true, 'right' => true, 'up' => true, 'down' => true];
+           
             if ($shootInfo['niceShoot'] !== null)
             {
                 $row = $shootInfo['niceShoot']['row'];
                 $col = $shootInfo['niceShoot']['col'];
-                $this->log->debug("следующий выстрел: ".$this->getPrintCoord($this->playerBoard, $row, $col));
+            if ($config['debug'])
+                    $this->log->debug("следующий выстрел: ".$this->getPrintCoord($this->playerBoard, $row, $col));
             }
             else
             {
                 do 
                 {
-                    //--------- 3 поля вокруг ?
                     $pos = end($shootInfo['pos']);
                     if ($shootInfo['vertical'] !== null)
                     {
@@ -316,7 +315,6 @@ class SeaBattle
                         )
                         {
                             $pos = $shootInfo['pos'][0];
-                            //-------- set inc in smartShoot !!
                             $shootInfo['inc'] = !$shootInfo['inc'];
                         }
                         if ($shootInfo['vertical'])
@@ -332,30 +330,29 @@ class SeaBattle
                     }
                     else  //----- было только 1 попадание  
                     {
-                        if ($pos['row'] === 0 || $this->playerBoard->getValue($pos['row'] - 1, $pos['col']) === $config['sea']['board']['hit'])  
+                        if ($pos['row'] === 0 || $this->playerBoard->getValue($pos['row'] - 1, $pos['col']) === $config['sea']['board']['miss'])  
                             $direction['up'] = false;
-                        if ($pos['row'] === $this->playerBoard->getRows() - 1 || $this->playerBoard->getValue($pos['row'] + 1, $pos['col']) === $config['sea']['board']['hit'])
+                        if ($pos['row'] === $this->playerBoard->getRows() - 1 || $this->playerBoard->getValue($pos['row'] + 1, $pos['col']) === $config['sea']['board']['miss'])
                             $direction['down'] = false;
-                        if ($pos['col'] === 0 || $this->playerBoard->getValue($pos['row'], $pos['col'] - 1) === $config['sea']['board']['hit'])
+                        if ($pos['col'] === 0 || $this->playerBoard->getValue($pos['row'], $pos['col'] - 1) === $config['sea']['board']['miss'])
                             $direction['left'] = false;
-                        if ($pos['col'] === $this->playerBoard->getCols() - 1 || $this->playerBoard->getValue($pos['row'], $pos['col'] + 1) === $config['sea']['board']['hit'])
+                        if ($pos['col'] === $this->playerBoard->getCols() - 1 || $this->playerBoard->getValue($pos['row'], $pos['col'] + 1) === $config['sea']['board']['miss'])
                             $direction['right'] = false;
 
                         $move_vert = (rand(0,1) == 0);    
 
-                        $up = $direction['up'];
-                        $down = $direction['down'];
-                        $left = $direction['left'];
-                        $right = $direction['right'];
-
-                        $this->log->debug("можно слерять вверх: ".($up ? 'да' : 'нет')."  вниз: ".($down ? 'да' : 'нет')."  влево: ".($left ? 'да' : 'нет')."  вправо: ".($right ? 'да' : 'нет'));
+                        if ($config['debug'])
+                            $this->log->debug(
+                                "можно стрелять вверх: ".($direction['up'] ? 'да' : 'нет')
+                                ."  вниз: ".($direction['down'] ? 'да' : 'нет')
+                                ."  влево: ".($direction['left'] ? 'да' : 'нет')
+                                ."  вправо: ".($direction['right'] ? 'да' : 'нет')
+                            );
 
                         if ($move_vert && ($direction['up'] || $direction['down']))
                         {
                             if (!$direction['up'] && !$direction['down'])
-                            {
-                                    $row = $pos['row'] + (rand(0,1) == 0 ? 1 : -1);
-                            }
+                                $row = $pos['row'] + (rand(0,1) == 0 ? 1 : -1);
                             else
                             {
                                 if ($direction['up'])
@@ -368,9 +365,7 @@ class SeaBattle
                         else
                         {
                             if ($direction['left'] && $direction['right'])
-                            {
                                 $col = $pos['col'] + (rand(0,1) == 0 ? 1 : -1);
-                            }
                             else
                             {
                                 if ($direction['left'])
@@ -392,27 +387,19 @@ class SeaBattle
                 if ($res['hit'])
                 {
                     if ($res['dead'])   
-                    {
-                        $this->log->info("Убил!!!");
                         $this->smartShoot = null;           
-                    }
                     else
-                    {
-                        $this->log->info("Попал...");
                         $this->smartShoot->addPos($row, $col);
-                    }
                     return $this->computerShoot($smart);
                 }
                 else
                 {
-                    $this->log->info("Мимо.");
                     $this->smartShoot->calcNiceShoot($row, $col);
                     return $res;
                 }
             }
         }
     }
-
 
     private function checkDeadShips($Ships)
     {
@@ -494,15 +481,13 @@ class SeaBattle
 
     private function makeCyrLabel($board)
     {
-        $cyr_label = ['А','Б','В','Г','Д','Е','Ж','З','И','К'];
-        for ($i = 0; $i < count($cyr_label); $i++)
-            $board->setColLabel($i, $cyr_label[$i]);
+        for ($i = 0; $i < count($this->cyr_label); $i++)
+            $board->setColLabel($i, $this->cyr_label[$i]);
     }
 
     public function getColByName($char)
     {
-        $cyr_label = ['А','Б','В','Г','Д','Е','Ж','З','И','К'];
-        return array_search($char, $cyr_label);
+        return array_search($char, $this->cyr_label);
     }
 
     private function getPrintCoord($board, $row, $col)

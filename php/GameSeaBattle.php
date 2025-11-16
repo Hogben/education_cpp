@@ -21,7 +21,7 @@ if(isset($_POST['action']))
         case 'place_ship':
             if (isset($_POST['coord']))
             {
-                $in_coord = mb_strtoupper($_POST['coord']);    
+                $in_coord = htmlspecialchars(mb_strtoupper($_POST['coord']));    
                 if (preg_match('/^([АБВГДЕЖЗИК])([1-9]|10)$/iu', $in_coord, $coord))
                 {    
                     $row = $coord[2] - 1;
@@ -50,7 +50,7 @@ if(isset($_POST['action']))
             $game->quickPlaceShip();            
             $message = 'Начало игры. Стреляй!';
             break;
-        case 'shiftOrintation':
+        case 'shiftOrientation':
             $game->shiftOrientation();
             break;
         case 'shoot':
@@ -110,6 +110,11 @@ if(isset($_POST['action']))
         .matrix th { background-color: #f0f0f0; font-weight: bold; }
         .message { padding: 15px; margin: 10px; border-radius: 5px; background-color: #e7f3fe; border-left: 6px solid #2196F3; }
         .control { margin: 20px; }
+        /* раскраска состояний игрового поля */
+        .cell-empty {background-color: #e6f7ff;}
+        .cell-miss  {background-color: #6db0cfff;}
+        .cell-hit   {background-color: #ff9165ff;}
+        .cell-ship  {background-color: #88ff9cff;}
     </style>  
 </head>    
 <body>
@@ -137,13 +142,13 @@ if(isset($_POST['action']))
                 <div>Текущий корабль: <?php echo $ship->getName() ?> (размер: <?php echo $ship->getSize() ?>, <?php echo $game->getCurOrientation() ?>)</div>
                 <div>
                     <label>Введите координату (А1-К10, можно с маленькими буквами): </label>
-                    <input type="text" name="coord" required>
+                    <input type="text" name="coord" required  style="width: 50px;">
                     <button type="submit" name="action" value='place_ship'>Разместить</button>
                 </div>
             </form>    
             <form method="POST">
                 <div>
-                    <button type="submit" name="action" value='shiftOrintation'>Повернуть</button>
+                    <button type="submit" name="action" value='shiftOrientation'>Повернуть</button>
                 <div>
                 <br>
                 <div>
@@ -154,7 +159,7 @@ if(isset($_POST['action']))
             <form method="POST">
                 <div>
                     <label>Введите координату (А1-К10, можно с маленькими буквами): </label>
-                    <input type="text" name="coord" id="coord_input" required>
+                    <input type="text" name="coord" id="coord_input" required style="width: 50px;">
                     <button type="submit" name="action" value='shoot' id="shoot_btn">Огонь!</button>
                 </div>
             </form>    
@@ -164,15 +169,24 @@ if(isset($_POST['action']))
         <form method="POST">
             <button type="submit" name="action" value='restart'>Начать заново...</button>
         </form>    
-        <textarea id="shoot_log" readonly style="width:80%; height: 400px; resize:vertical; font-famaly: monospace; font-size: 12px; padding: 10px">
-        <?php
-           echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
+        <br>
+        <textarea id="shoot_log" readonly style="width:80%; height: 200px; resize:vertical; font-family: monospace; font-size: 12px; padding: 10px"><?php
+echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
         ?>
         </textarea>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        const config = 
+        {
+            empty:  '<?php echo $config['sea']['board']['empty'] ?>',
+            miss:   '<?php echo $config['sea']['board']['miss'] ?>',
+            hit:    '<?php echo $config['sea']['board']['hit'] ?>',
+            ship:   '<?php echo $config['sea']['board']['ship'] ?>'
+        };
+
+        document.addEventListener('DOMContentLoaded', function () 
+        {
             const coordInput = document.querySelector('input[name="coord"]');
             if (coordInput) {
                 coordInput.focus();
@@ -193,6 +207,8 @@ if(isset($_POST['action']))
                 localStorage.setItem('shoot_log_height', textarea.style.height);
             });
 
+            textarea.scrollTop = textarea.scrollHeight;
+
             const coorInput = document.getElementById('coord_input');
             const btnShoot = document.getElementById('shoot_btn');
 
@@ -212,7 +228,25 @@ if(isset($_POST['action']))
             coorInput.addEventListener('input', updateShootState);
             updateShootState();
             coorInput.focus();
-            
+
+            function getCellState(cellValue)
+            {
+                switch (cellValue)
+                {
+                    case config.miss:   return 'cell-miss';
+                    case config.hit:    return 'cell-hit';
+                    case config.ship:   return 'cell-ship';
+                    default:            return 'cell-empty';
+                }
+            }
+
+            document.querySelectorAll('.matrix td').forEach(function(cell) 
+            {
+                const cellValue = cell.textContent.trim();
+                const cellClass = getCellState(cellValue);
+                cell.classList.add(cellClass);
+            });
+
         });        
 
     </script>
