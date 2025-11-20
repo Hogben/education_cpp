@@ -6,6 +6,11 @@ ini_set('display_errors', 1);
 require_once 'SeaBattle.php';
 
 session_start();
+
+$gameMode = isset($_GET['mode']) ? $_GET['mode'] : 'single';
+
+
+
 if(!isset($_SESSION['game']))
 {
     $_SESSION['game'] = new SeaBattle();
@@ -177,6 +182,8 @@ echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function () 
+    {
         const config = 
         {
             empty:  '<?php echo $config['sea']['board']['empty'] ?>',
@@ -185,50 +192,8 @@ echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
             ship:   '<?php echo $config['sea']['board']['ship'] ?>'
         };
 
-        document.addEventListener('DOMContentLoaded', function () 
+        function setCellColor() 
         {
-            const coordInput = document.querySelector('input[name="coord"]');
-            if (coordInput) {
-                coordInput.focus();
-                coordInput.select();
-            }
-
-            const textarea = document.getElementById('shoot_log');
-            const savedHeight = localStorage.getItem('shoot_log_height');
-            if (savedHeight) {
-                textarea.style.height = savedHeight;
-            }
-            
-            textarea.addEventListener('input', function() {
-                localStorage.setItem('shoot_log_height', textarea.style.height);
-            });
-            
-            textarea.addEventListener('mouseup', function() {
-                localStorage.setItem('shoot_log_height', textarea.style.height);
-            });
-
-            textarea.scrollTop = textarea.scrollHeight;
-
-            const coorInput = document.getElementById('coord_input');
-            const btnShoot = document.getElementById('shoot_btn');
-
-            function coorValidate(coor)
-            {
-                return /^[АБВГДЕЖЗИКабвгдежзик]([1-9]|10)$/i.test(coor);
-            }
-
-            function updateShootState()
-            {
-                const cInput = coorInput.value.trim();
-                const isEnable = coorValidate(cInput);
-
-                btnShoot.disabled = !isEnable;
-            }
-
-            coorInput.addEventListener('input', updateShootState);
-            updateShootState();
-            coorInput.focus();
-
             function getCellState(cellValue)
             {
                 switch (cellValue)
@@ -244,11 +209,57 @@ echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
             {
                 const cellValue = cell.textContent.trim();
                 const cellClass = getCellState(cellValue);
+                cell.classList.remove('cell-empty', 'cell-miss', 'cell-hit', 'cell-ship');
                 cell.classList.add(cellClass);
             });
+        }
 
-        });        
+        setCellColor();
 
+        const coordInput = document.querySelector('input[name="coord"]');
+        if (coordInput) {
+            coordInput.focus();
+            coordInput.select();
+        }
+
+        const textarea = document.getElementById('shoot_log');
+        const savedHeight = localStorage.getItem('shoot_log_height');
+        if (savedHeight) {
+            textarea.style.height = savedHeight;
+        }
+        
+        textarea.addEventListener('input', function() {
+            localStorage.setItem('shoot_log_height', textarea.style.height);
+        });
+        
+        textarea.addEventListener('mouseup', function() {
+            localStorage.setItem('shoot_log_height', textarea.style.height);
+        });
+
+        textarea.scrollTop = textarea.scrollHeight;
+
+        const coorInput = document.getElementById('coord_input');
+        const btnShoot = document.getElementById('shoot_btn');
+
+        function coorValidate(coor)
+        {
+            return /^[АБВГДЕЖЗИКабвгдежзик]([1-9]|10)$/i.test(coor);
+        }
+
+        function updateShootState()
+        {
+            const cInput = coorInput.value.trim();
+            const isEnable = coorValidate(cInput);
+
+            btnShoot.disabled = !isEnable;
+        }
+
+        if (coorInput) {
+            coorInput.addEventListener('input', updateShootState);
+            updateShootState();
+            coorInput.focus();
+        }
+    });        
     </script>
 
 </body>

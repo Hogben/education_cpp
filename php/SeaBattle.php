@@ -8,6 +8,7 @@ require_once 'Logger.php';
 
 class SeaBattle 
 {
+    //---------- one player
     private $playerBoard; // Matrix
     private $computerBoard; // Matrix
     private $playerShips = []; 
@@ -20,7 +21,13 @@ class SeaBattle
 
     public $log = null;
 
-    public function __construct()
+    //---------- netplay
+    private $gameID;
+    private $playerNumber;
+    private $playerCurrent;
+    private $multiPlayer = false;
+
+    public function __construct($gameID = null, $playerNumber = null)
     {
         global $config;
 
@@ -35,7 +42,16 @@ class SeaBattle
         $this->makeCyrLabel($this->computerBoard);
 
         $this->initShips();
-        $this->placeComputerShips();
+
+        if ($gameID)
+        {
+            $this->ganeID = $gameID;
+            $this->playerNumber = $playerNumber;
+            $this->multiPlayer = true;
+            $this->playerCurrent = 'Игрок 1';
+        }
+        else
+            $this->placeComputerShips();
         //---- func растановки кораблей
 
         $this->log = new Logger('sea_battle');
@@ -250,155 +266,191 @@ class SeaBattle
     {
         global $config;
 
-        $row = null;
-        $col = null;
-
-        if ($this->smartShoot === null || !$smart)
+        $maxShots = 30; // Максимальное количество выстрелов за ход
+        $shotsMade = 0;
+        
+        do 
         {
-            do 
-            {
-                $row = rand(0,$this->playerBoard->getRows() - 1);
-                $col = rand(0,$this->playerBoard->getCols() - 1);
+            $row = null;
+            $col = null;
 
-            } while ($this->playerBoard->getValue($row, $col) === $config['sea']['board']['hit'] || $this->playerBoard->getValue($row, $col) === $config['sea']['board']['miss']);
-
-            $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
-            if ($res['game_over'])
-                return $res;
-            else
+            if ($this->smartShoot === null || !$smart)
             {
-                if ($res['hit'])
-                {
-                    if (!$res['dead'])  
-                        $this->smartShoot = new SmartShoot($row, $col, $this->log);
-                    return $this->computerShoot($smart);
-                }
-                else
-                    return $res;
-            }
-        }
-        else
-        {
-            $shootInfo = $this->smartShoot->getInfo();
-
-            $direction = ['left' => true, 'right' => true, 'up' => true, 'down' => true];
-           
-            if ($shootInfo['niceShoot'] !== null)
-            {
-                $row = $shootInfo['niceShoot']['row'];
-                $col = $shootInfo['niceShoot']['col'];
-            if ($config['debug'])
-                    $this->log->debug("следующий выстрел: ".$this->getPrintCoord($this->playerBoard, $row, $col));
-            }
-            else
-            {
+                $attempts = 0;
                 do 
                 {
-                    $pos = end($shootInfo['pos']);
-                    if ($shootInfo['vertical'] !== null)
-                    {
-                        if ($shootInfo['vertical'])
-                        {
-                            $direction['left'] = false;
-                            $direction['right'] = false;
-                        }
-                        else
-                        {
-                            $direction['up'] = false;
-                            $direction['down'] = false;
-                        }
-                        if (
-                            ($shootInfo['vertical'] && $shootInfo['inc'] && $pos['row'] === $this->playerBoard->getRows() - 1) || 
-                            ($shootInfo['vertical'] && !$shootInfo['inc'] && $pos['row'] === 0) ||
-                            (!$shootInfo['vertical'] && $shootInfo['inc'] && $pos['col'] === $this->playerBoard->getCols() - 1) || 
-                            (!$shootInfo['vertical'] && !$shootInfo['inc'] && $pos['col'] === 0) 
-                        )
-                        {
-                            $pos = $shootInfo['pos'][0];
-                            $shootInfo['inc'] = !$shootInfo['inc'];
-                        }
-                        if ($shootInfo['vertical'])
-                        {
-                            $row = $pos['row'] + ($shootInfo['inc'] ? 1 : -1);
-                            $col = $pos['col'];
-                        }
-                        else
-                        {
-                            $col = $pos['col'] + ($shootInfo['inc'] ? 1 : -1);
-                            $row = $pos['row'];
-                        }
+                    $row = rand(0,$this->playerBoard->getRows() - 1);
+                    $col = rand(0,$this->playerBoard->getCols() - 1);
+                    $attempts++;
+                    
+                    // Защита от бесконечного цикла
+                    if ($attempts > 200) {
+                        $this->log->error("Не удалось найти свободную клетку для выстрела");
+                        return ['result' => 'Ошибка: не удалось найти цель', 'hit' => false, 'game_over' => false, 'dead' => false];
                     }
-                    else  //----- было только 1 попадание  
-                    {
-                        if ($pos['row'] === 0 || $this->playerBoard->getValue($pos['row'] - 1, $pos['col']) === $config['sea']['board']['miss'])  
-                            $direction['up'] = false;
-                        if ($pos['row'] === $this->playerBoard->getRows() - 1 || $this->playerBoard->getValue($pos['row'] + 1, $pos['col']) === $config['sea']['board']['miss'])
-                            $direction['down'] = false;
-                        if ($pos['col'] === 0 || $this->playerBoard->getValue($pos['row'], $pos['col'] - 1) === $config['sea']['board']['miss'])
-                            $direction['left'] = false;
-                        if ($pos['col'] === $this->playerBoard->getCols() - 1 || $this->playerBoard->getValue($pos['row'], $pos['col'] + 1) === $config['sea']['board']['miss'])
-                            $direction['right'] = false;
 
-                        $move_vert = (rand(0,1) == 0);    
-
-                        if ($config['debug'])
-                            $this->log->debug(
-                                "можно стрелять вверх: ".($direction['up'] ? 'да' : 'нет')
-                                ."  вниз: ".($direction['down'] ? 'да' : 'нет')
-                                ."  влево: ".($direction['left'] ? 'да' : 'нет')
-                                ."  вправо: ".($direction['right'] ? 'да' : 'нет')
-                            );
-
-                        if ($move_vert && ($direction['up'] || $direction['down']))
-                        {
-                            if (!$direction['up'] && !$direction['down'])
-                                $row = $pos['row'] + (rand(0,1) == 0 ? 1 : -1);
-                            else
-                            {
-                                if ($direction['up'])
-                                    $row = $pos['row'] - 1;
-                                else    
-                                    $row = $pos['row'] + 1;
-                            }
-                            $col = $pos['col'];
-                        }
-                        else
-                        {
-                            if ($direction['left'] && $direction['right'])
-                                $col = $pos['col'] + (rand(0,1) == 0 ? 1 : -1);
-                            else
-                            {
-                                if ($direction['left'])
-                                    $col = $pos['col'] - 1;
-                                else    
-                                    $col = $pos['col'] + 1;
-                            }
-                            $row = $pos['row'];
-                        }
-                    }
                 } while ($this->playerBoard->getValue($row, $col) === $config['sea']['board']['hit'] || $this->playerBoard->getValue($row, $col) === $config['sea']['board']['miss']);
-            }
 
-            $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
-            if ($res['game_over'])
-                return $res;
+                $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
+                $shotsMade++;
+                
+                if ($res['game_over']) {
+                    return $res;
+                } 
+                elseif ($res['hit']) 
+                {
+                    if (!$res['dead']) {
+                        $this->smartShoot = new SmartShoot($row, $col, $this->log);
+                        // Продолжаем стрельбу в следующей итерации цикла
+                    } else {
+                        $this->smartShoot = null;
+//                        return $res;
+                    }
+                    continue;
+                } else {
+                    return $res;
+                }
+            }
             else
             {
-                if ($res['hit'])
+                $shootInfo = $this->smartShoot->getInfo();
+
+                $direction = ['left' => true, 'right' => true, 'up' => true, 'down' => true];
+            
+                if ($shootInfo['niceShoot'] !== null)
                 {
-                    if ($res['dead'])   
-                        $this->smartShoot = null;           
-                    else
-                        $this->smartShoot->addPos($row, $col);
-                    return $this->computerShoot($smart);
+                    $row = $shootInfo['niceShoot']['row'];
+                    $col = $shootInfo['niceShoot']['col'];
+                    if ($config['debug'])
+                        $this->log->debug("следующий выстрел: ".$this->getPrintCoord($this->playerBoard, $row, $col));
                 }
                 else
+                {
+                    $attempts = 0;
+                    do 
+                    {
+                        $pos = end($shootInfo['pos']);
+                        if ($shootInfo['vertical'] !== null)
+                        {
+                            if ($shootInfo['vertical'])
+                            {
+                                $direction['left'] = false;
+                                $direction['right'] = false;
+                            }
+                            else
+                            {
+                                $direction['up'] = false;
+                                $direction['down'] = false;
+                            }
+                            if (
+                                ($shootInfo['vertical'] && $shootInfo['inc'] && $pos['row'] === $this->playerBoard->getRows() - 1) || 
+                                ($shootInfo['vertical'] && !$shootInfo['inc'] && $pos['row'] === 0) ||
+                                (!$shootInfo['vertical'] && $shootInfo['inc'] && $pos['col'] === $this->playerBoard->getCols() - 1) || 
+                                (!$shootInfo['vertical'] && !$shootInfo['inc'] && $pos['col'] === 0) 
+                            )
+                            {
+                                $pos = $shootInfo['pos'][0];
+                                $shootInfo['inc'] = !$shootInfo['inc'];
+                            }
+                            if ($shootInfo['vertical'])
+                            {
+                                $row = $pos['row'] + ($shootInfo['inc'] ? 1 : -1);
+                                $col = $pos['col'];
+                            }
+                            else
+                            {
+                                $col = $pos['col'] + ($shootInfo['inc'] ? 1 : -1);
+                                $row = $pos['row'];
+                            }
+                        }
+                        else  //----- было только 1 попадание  
+                        {
+                            if ($pos['row'] === 0 || $this->playerBoard->getValue($pos['row'] - 1, $pos['col']) === $config['sea']['board']['miss'])  
+                                $direction['up'] = false;
+                            if ($pos['row'] === $this->playerBoard->getRows() - 1 || $this->playerBoard->getValue($pos['row'] + 1, $pos['col']) === $config['sea']['board']['miss'])
+                                $direction['down'] = false;
+                            if ($pos['col'] === 0 || $this->playerBoard->getValue($pos['row'], $pos['col'] - 1) === $config['sea']['board']['miss'])
+                                $direction['left'] = false;
+                            if ($pos['col'] === $this->playerBoard->getCols() - 1 || $this->playerBoard->getValue($pos['row'], $pos['col'] + 1) === $config['sea']['board']['miss'])
+                                $direction['right'] = false;
+
+                            $move_vert = (rand(0,1) == 0);    
+
+                            if ($config['debug'])
+                                $this->log->debug(
+                                    "можно стрелять вверх: ".($direction['up'] ? 'да' : 'нет')
+                                    ."  вниз: ".($direction['down'] ? 'да' : 'нет')
+                                    ."  влево: ".($direction['left'] ? 'да' : 'нет')
+                                    ."  вправо: ".($direction['right'] ? 'да' : 'нет')
+                                );
+
+                            if ($move_vert && ($direction['up'] || $direction['down']))
+                            {
+                                if (!$direction['up'] && !$direction['down'])
+                                    $row = $pos['row'] + (rand(0,1) == 0 ? 1 : -1);
+                                else
+                                {
+                                    if ($direction['up'])
+                                        $row = $pos['row'] - 1;
+                                    else    
+                                        $row = $pos['row'] + 1;
+                                }
+                                $col = $pos['col'];
+                            }
+                            else
+                            {
+                                if ($direction['left'] && $direction['right'])
+                                    $col = $pos['col'] + (rand(0,1) == 0 ? 1 : -1);
+                                else
+                                {
+                                    if ($direction['left'])
+                                        $col = $pos['col'] - 1;
+                                    else    
+                                        $col = $pos['col'] + 1;
+                                }
+                                $row = $pos['row'];
+                            }
+                        }
+                        $attempts++;
+                        
+                        // Защита от бесконечного цикла
+                        if ($attempts > 50) {
+                            $this->log->error("Не удалось найти цель для умного выстрела");
+                            $this->smartShoot = null;
+                            return ['result' => 'Ошибка поиска цели', 'hit' => false, 'game_over' => false, 'dead' => false];
+                        }
+                    } while ($this->playerBoard->getValue($row, $col) === $config['sea']['board']['hit'] || $this->playerBoard->getValue($row, $col) === $config['sea']['board']['miss']);
+                }
+
+                $res = $this->shootResult($this->playerBoard, $this->playerShips, $row, $col);
+                $shotsMade++;
+                
+                if ($res['game_over']) {
+                    return $res;
+                } elseif ($res['hit']) 
+                {
+                    if ($res['dead']) {
+                        $this->smartShoot = null;
+//                        return $res;
+                    } else {
+                        $this->smartShoot->addPos($row, $col);
+                        // Продолжаем стрельбу в следующей итерации
+                    }
+                    continue;
+                } else 
                 {
                     $this->smartShoot->calcNiceShoot($row, $col);
                     return $res;
                 }
             }
-        }
+            
+            // Защита от бесконечного цикла
+            if ($shotsMade >= $maxShots) {
+                $this->log->warning("Достигнут лимит выстрелов за ход: $maxShots");
+                return ['result' => 'Лимит выстрелов', 'hit' => false, 'game_over' => false, 'dead' => false];
+            }
+            
+        } while (true);
     }
 
     private function checkDeadShips($Ships)
