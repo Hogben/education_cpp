@@ -45,10 +45,10 @@ class SeaBattle
 
         if ($gameID)
         {
-            $this->ganeID = $gameID;
+            $this->gameID = $gameID;
             $this->playerNumber = $playerNumber;
             $this->multiPlayer = true;
-            $this->playerCurrent = 'Игрок 1';
+            $this->playerCurrent = 'player1';
         }
         else
             $this->placeComputerShips();
@@ -192,6 +192,69 @@ class SeaBattle
             return true;
         }
         return false;
+    }
+
+    private function loadBoard($gameID)
+    {
+        if (!$this->multiPlayer)    return;
+
+        $key = 'game_'.$gameID;
+        if (isset($_SESSION[$key]))
+        {
+            $gameState = $_SESSION[$key];
+            $this->playerBoard = $gameState['playerBoard'];
+            $this->computerBoard = $gameState['computerBoard'];
+            $this->playerShips  = $gameState['playerShips'];
+            $this->computerShips = $gameState['computerShips'];
+            $this->playerCurrent = $gameState['playerCurrent'];
+            return true;
+        }
+        return false;
+    } 
+
+    private function saveBoard()
+    {
+        if (!$this->multiPlayer)    return;
+
+        $gameState = [
+            'playerBoard' => $this->playerBoard,
+            'computerBoard' => $this->computerBoard, 
+            'playerShips' => $this->playerShips, 
+            'computerShips' => $this->computerShips,
+            'playerCurrent' => $this->playerCurrent
+        ];
+
+        $_SESSION['game_'.$this->gameID] = $gameState;
+    } 
+
+    public function networkShoot($row, $col, $shooter)
+    {
+        global $config;
+
+        if ($this->playerCurrent !== $shooter)
+        {
+            return ['result' => 'Не Ваш ход...', 'hit' => false, 'game_over' => false, 'dead' => false];
+        }
+
+        $targetBoard = ($shooter === 'player1') ? $this->computerBoard : $this->playerBoard;
+        $targetShips = ($shooter === 'player1') ? $this->computerShips : $this->playerShips;
+
+        if ($config['sea']['board']['miss'] === $targetBoard->getValue($row, $col) || $config['sea']['board']['hit'] === $targetBoard->getValue($row, $col))
+            return ['result' => 'Уже сюда стрелял!', 'hit' => false, 'game_over' => false, 'dead' => false];
+
+        $res = $this->shootResult($targetBoard, $targetShips, $row, $col);
+
+        if (!$res['hit'])
+        {
+            $this->playerCurrent = ($shooter === 'player1') ? 'player2' : 'player1';
+        }
+
+        $this->saveBoard();
+    }
+    
+    public function getPlayer()
+    {
+        return $this->playerNumber;
     }
 
     public function playerShoot($row, $col)

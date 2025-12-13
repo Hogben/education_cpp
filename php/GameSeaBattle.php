@@ -9,14 +9,37 @@ session_start();
 
 $gameMode = isset($_GET['mode']) ? $_GET['mode'] : 'single';
 
-
-
-if(!isset($_SESSION['game']))
+if (!isset($_SESSION['game']) || (isset($_SESSION['game_mode']) && $_SESSION['game_mode'] !== $gameMode)) 
 {
-    $_SESSION['game'] = new SeaBattle();
+    switch ($gameMode) 
+    {
+        case 'single':
+            $_SESSION['game'] = new SeaBattle();
+            $_SESSION['game_mode'] = 'single';
+            break;
+            
+        case 'network':
+            if (!isset($_SESSION['net_game'])) 
+            {
+                header('Location:NetSeaBattle.php');
+                exit;
+            }
+            
+            $gameId = $_SESSION['net_game'];
+            $playerRole = $_SESSION['player_role'];
+            $_SESSION['game'] = new SeaBattle($gameId, $playerRole);
+            $_SESSION['game_mode'] = 'network';
+            break;
+            
+        default:
+            $_SESSION['game'] = new SeaBattle();
+            $_SESSION['game_mode'] = 'single';
+            break;
+    }
 }
 
 $game = $_SESSION['game'];
+$gameMode = $_SESSION['game_mode'];
 $message = 'Расстановка кораблей';
 
 if(isset($_POST['action']))
@@ -94,6 +117,22 @@ if(isset($_POST['action']))
                 }
             }
             break;
+        case 'neworkShoot':
+            if ($gameMode === 'network')
+            {
+                if (isset($_POST['coord']))
+                {
+                    $in_coord = mb_strtoupper($_POST['coord']);    
+                    if (preg_match('/^([АБВГДЕЖЗИК])([1-9]|10)$/iu', $in_coord, $coord))
+                    {
+                        $row = $coord[2] - 1;
+                        $col = $game->getColByName($coord[1]);
+                        $player = $game->getPlayer();
+                        $res = $game->networkShoot($row, $col, $player);
+                        //--- разборчик ---- 
+                    }    
+                }
+            break;
         case 'restart':
             session_destroy();
             header('Location: ' . $_SERVER['PHP_SELF']);            
@@ -102,7 +141,7 @@ if(isset($_POST['action']))
     $_SESSION['game'] = $game;
 }
 ?>
-<!DOCTYPE html>
+<!DOCTYPE html> 
 <html>
 <head>    
   <title>Морской бой</title>
