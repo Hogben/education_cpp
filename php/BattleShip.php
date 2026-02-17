@@ -7,7 +7,7 @@ class BattleShip
     private $hit = 0;
     private $position = []; // row,col
     private $vertical = false;
-    
+
     public function __construct($size, $name)
     {
         $this->name = $name; 
@@ -34,7 +34,13 @@ class BattleShip
 
     public function getPosition()
     {
-        return ['pos' => $this->position, 'vertical' => $this->vertical];
+        return ['pos' => $this->position, 'vertical' => $this->vertical, 'hit' => $this->hit];
+    }
+
+    public function setHit($hit)
+    {
+        $this->hit = $hit;
+        return true;
     }
 
     public function isDead()

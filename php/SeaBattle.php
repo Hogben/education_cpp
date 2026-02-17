@@ -5,6 +5,7 @@ require_once 'matrix.php';
 require_once 'BattleShip.php';
 require_once 'SmartShoot.php';
 require_once 'Logger.php';
+require_once 'NetworkManager.php';
 
 class SeaBattle 
 {
@@ -26,10 +27,14 @@ class SeaBattle
     private $playerNumber;
     private $playerCurrent;
     private $multiPlayer = false;
+    private $enemyBoard = null;
 
     public function __construct($gameID = null, $playerNumber = null)
     {
         global $config;
+
+        $this->log = new Logger('sea_battle');
+        $this->log->clearLog();
 
         $this->playerBoard = new Matrix($config['sea']['size'], $config['sea']['size'], 'numeric', 'alpha', $config['sea']['board']['empty']);
         $this->playerBoard->setShowColsLabel(true);
@@ -43,19 +48,131 @@ class SeaBattle
 
         $this->initShips();
 
-        if ($gameID)
+        if ($gameID && $playerNumber) 
         {
             $this->gameID = $gameID;
             $this->playerNumber = $playerNumber;
             $this->multiPlayer = true;
-            $this->playerCurrent = 'player1';
+            $this->loadNetworkState();
         }
         else
             $this->placeComputerShips();
-        //---- func растановки кораблей
+    }
 
-        $this->log = new Logger('sea_battle');
-        $this->log->clearLog();
+    private function loadNetworkState()
+    {
+        if (!$this->multiPlayer) return;
+
+        $this->playerCurrent = NetworkManager::getCurrentPlayer($this->gameID);
+        $boardData = NetworkManager::getGameBoard($this->gameID, $this->playerNumber);
+        if ($boardData)
+        {
+            $this->loadBoardFromData($boardData);
+        }
+
+        $enemyPlayer = ($this->playerNumber == 'player1') ? 'player2' : 'player1';
+        $enemyBoardData = NetworkManager::getGameBoard($this->gameID, $enemyPlayer);
+
+        if ($enemyBoardData)
+        {
+            $this->loadEnemyBoard($enemyBoardData);
+        }
+
+
+    }
+
+    private function saveNetworkState()
+    {
+        if (!$this->multiPlayer) return;
+
+        $boardData = $this->getBoardData();
+        NetworkManager::updateGameBoard($this->gameID, $this->playerNumber, $boardData);
+
+    }
+
+    private function getBoardData()
+    {
+        $data = [
+            'board' => [],
+            'ships' => [],
+            'curPlayerShip' => $this->curPlayerShip
+        ];
+
+        for ($row = 0; $row < $this->playerBoard->getRows(); $row++)
+        {
+            for ($col = 0; $col < $this->playerBoard->getCols(); $col++)
+            {
+                $data['board'][$row][$col] = $this->playerBoard->getValue($row, $col);
+            }
+        }
+        //-------- restore ships
+        foreach ($this->playerShips as $index => $ship)
+        {
+            $shipData = $ship->getPosition();
+            $data['ships'][$index] = $shipData;
+        }
+
+        return $data;
+    }
+
+    private function loadBoardFromData($boardData)
+    {
+        global $config;
+
+
+        for ($row = 0; $row < $this->playerBoard->getRows(); $row++)
+        {
+            for ($col = 0; $col < $this->playerBoard->getCols(); $col++)
+            {
+                $this->playerBoard->setValue($row, $col, $boardData['board'][$row][$col]);
+            }
+        }
+        //-------- restore ships
+        if (isset($boardData['ships']))
+        {
+            foreach ($boardData['ships'] as $index => $shipData)
+            {
+                if (isset($this->playerShips[$index]))
+                {
+                    if (isset($shipData['pos']))
+                        $this->playerShips[$index]->setPosition($shipData['pos'], $shipData['vertical']);
+
+                    if (isset($shipData['hit']))
+                        $this->playerShips[$index]->setHit($shipData['hit']);
+                }
+            }
+        }
+
+        $this->curPlayerShip = $boardData['curPlayerShip'] ?? 0;
+    }
+
+
+    private function loadEnemyBoard($boardData)
+    {
+        global $config;
+
+        for ($row = 0; $row < $this->computerBoard->getRows(); $row++)
+        {
+            for ($col = 0; $col < $this->computerBoard->getCols(); $col++)
+            {
+                $this->computerBoard->setValue($row, $col, $boardData['board'][$row][$col]);
+            }
+        }
+        //-------- restore ships
+        if (isset($boardData['ships']))
+        {
+            foreach ($boardData['ships'] as $index => $shipData)
+            {
+                if (isset($this->computerShips[$index]))
+                {
+                    if (isset($shipData['pos']))
+                        $this->computerShips[$index]->setPosition($shipData['pos'], $shipData['vertical']);
+
+                    if (isset($shipData['hit']))
+                        $this->computerShips[$index]->setHit($shipData['hit']);
+                }
+            }
+        }
     }
 
     private function initShips()
@@ -78,12 +195,23 @@ class SeaBattle
         global $config;
 
         $this->playerBoard->fillMatrix($config['sea']['board']['empty']);
+
+        $this->curPlayerShip = 0;
+        foreach ($this->playerShips as $ship) 
+        {
+            $ship->setPosition([], false);
+        }        
+
         $this->placeShipsRandom($this->playerBoard, $this->playerShips);
         $this->curPlayerShip = count($config['ships']);
-
- //       $this->log->info("Начало игры");
+         //       $this->log->info("Начало игры");
+        if ($this->multiPlayer)            
+        {
+            $this->setPlayerReady();
+            $this->saveNetworkState();
+        }
+        //        $this->Start();
     }
-
 
     private function placeShipsRandom($board, $ships)  //--- всегда комп и по желанию игрок
     {
@@ -119,6 +247,8 @@ class SeaBattle
                 }
             }
         }
+        if ($this->multiPlayer)            
+            $this->saveNetworkState();
     }
 
     private function drawShip($row, $col, $val, $board)
@@ -188,44 +318,44 @@ class SeaBattle
                 ($this->vertical) ? $this->drawShip($row + $i, $col, $config['sea']['board']['ship'], $this->playerBoard) : $this->drawShip($row, $col + $i, $config['sea']['board']['ship'], $this->playerBoard);    
             }                    
             $ship->setPosition($pos, $this->vertical); 
+            
             $this->curPlayerShip++;
+            if ($this->curPlayerShip === count($config['ships']))   
+            {
+                if ($this->multiPlayer)  $this->setPlayerReady();
+//                $this->curPlayerShip--;
+            }
+
+            if ($this->multiPlayer)          
+            {
+                $this->saveNetworkState();
+            }
             return true;
         }
         return false;
     }
 
-    private function loadBoard($gameID)
+//---------- синхронизация состояния игры ----
+    public function syncGameState()
     {
-        if (!$this->multiPlayer)    return;
-
-        $key = 'game_'.$gameID;
-        if (isset($_SESSION[$key]))
+        $mes = '';
+        if ($this->multiPlayer)
         {
-            $gameState = $_SESSION[$key];
-            $this->playerBoard = $gameState['playerBoard'];
-            $this->computerBoard = $gameState['computerBoard'];
-            $this->playerShips  = $gameState['playerShips'];
-            $this->computerShips = $gameState['computerShips'];
-            $this->playerCurrent = $gameState['playerCurrent'];
-            return true;
+            $this->loadNetworkState();
+
+            if ($this->Start())
+            {
+                $mes = "Стреляет ".$this->playerCurrent;
+            }
+            else
+            {
+                $mes = NetworkManager::getPlayerReady($this->gameID, $this->playerNumber) ? "Ждем соперника" : "Расставьте корабли";
+            }
+            return['message' => $mes];
         }
-        return false;
-    } 
-
-    private function saveBoard()
-    {
-        if (!$this->multiPlayer)    return;
-
-        $gameState = [
-            'playerBoard' => $this->playerBoard,
-            'computerBoard' => $this->computerBoard, 
-            'playerShips' => $this->playerShips, 
-            'computerShips' => $this->computerShips,
-            'playerCurrent' => $this->playerCurrent
-        ];
-
-        $_SESSION['game_'.$this->gameID] = $gameState;
-    } 
+        else
+            return [];
+    }
 
     public function networkShoot($row, $col, $shooter)
     {
@@ -249,12 +379,17 @@ class SeaBattle
             $this->playerCurrent = ($shooter === 'player1') ? 'player2' : 'player1';
         }
 
-        $this->saveBoard();
+        $this->saveNetworkState();
     }
     
     public function getPlayer()
     {
         return $this->playerNumber;
+    }
+
+    public function isPlayerReady()
+    {
+        return NetworkManager::getPlayerReady($this->gameID, $this->playerNumber);
     }
 
     public function playerShoot($row, $col)
@@ -362,15 +497,20 @@ class SeaBattle
                 } 
                 elseif ($res['hit']) 
                 {
-                    if (!$res['dead']) {
+                    if (!$res['dead']) 
+                    {
                         $this->smartShoot = new SmartShoot($row, $col, $this->log);
                         // Продолжаем стрельбу в следующей итерации цикла
-                    } else {
+                    }
+                    else 
+                    {
                         $this->smartShoot = null;
-//                        return $res;
+                        //                        return $res;
                     }
                     continue;
-                } else {
+                } 
+                else 
+                {
                     return $res;
                 }
             }
@@ -494,8 +634,9 @@ class SeaBattle
                 {
                     if ($res['dead']) {
                         $this->smartShoot = null;
-//                        return $res;
-                    } else {
+                        //                        return $res;
+                    } 
+                    else {
                         $this->smartShoot->addPos($row, $col);
                         // Продолжаем стрельбу в следующей итерации
                     }
@@ -561,12 +702,30 @@ class SeaBattle
         return $this->computerBoard->make();
     }
 
+    private function setPlayerReady()
+    {
+        global $config;
+        if (count($config['ships']) === $this->curPlayerShip)
+        {
+            NetworkManager::setPlayerReady($this->gameID, $this->playerNumber);
+        }
+    }
+
     public function Start()
     {
         global $config;
 
         if (count($config['ships']) === $this->curPlayerShip)
-            return true;
+        {
+            if ($this->multiPlayer)            
+            {
+                return NetworkManager::isBothReady($this->gameID);
+            }
+            else
+            {
+                return true;
+            }
+        }
         else
             return false;
     }
@@ -579,9 +738,20 @@ class SeaBattle
 
     public function getCurPlaceShip()
     {
+        global $config;
+/*/        
         $idx = $this->curPlayerShip;
-        if ($this->Start()) $idx--;
+        if ($this->multiPlayer)            
+        {
+            if ($this->isPlayerReady())    $idx--;
+        }
+        else
+        {
+            if ($this->Start()) $idx--;
+        }
         return $this->playerShips[$idx];
+/*/        
+        return (count($config['ships']) === $this->curPlayerShip) ?  $this->playerShips[$this->curPlayerShip - 1] : $this->playerShips[$this->curPlayerShip];
     }
 
     public function getCurOrientation()

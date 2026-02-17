@@ -3,10 +3,20 @@
 class NetworkStorage
 {
     private static $fileSession = 'network_games.json';
+    private static $maxAgePerSecond = 1800; 
     
     public static function saveGames($games)
     {
-        file_put_contents(self::$fileSession, json_encode($games, JSON_PRETTY_PRINT));
+        $currentTime = time();
+        foreach ($games as $gameID => $game) 
+        {
+            if ($currentTime - ($game['create_time'] ?? 0) > self::$maxAgePerSecond)
+            {
+                unset($games[$gameID]);
+            }
+        }
+       
+        file_put_contents(self::$fileSession, json_encode($games, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
     }
     
     public static function loadGames()
@@ -20,22 +30,31 @@ class NetworkStorage
         $games = json_decode($data, true) ?: [];
         
         $currentTime = time();
-        $hasChanges = false;
+        $changed = false;
         foreach ($games as $gameID => $game) 
         {
-            if ($currentTime - $game['create_time'] > 900) // 15 мин
+            if ($currentTime - ($game['create_time'] ?? 0) > self::$maxAgePerSecond)
             {
                 unset($games[$gameID]);
-                $hasChanges = true;
+                $changed = true;
             }
         }
         
-        if ($hasChanges) 
-        {
+        if ($changed) {
             self::saveGames($games);
         }
         
         return $games;
+    }
+    
+    public static function cleanGame($gameID)
+    {
+        $games = self::loadGames();
+        if (isset($games[$gameID])) 
+        {
+            unset($games[$gameID]);
+            self::saveGames($games);
+        }
     }
 }
 ?>

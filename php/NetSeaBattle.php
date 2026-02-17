@@ -6,11 +6,21 @@ ini_set('display_errors', 1);
 session_start();
 require_once 'NetworkManager.php';
 
+$games = NetworkManager::getGameList();
+
 if (isset($_POST['action']))
 {
     switch ($_POST['action'])
     {
         case 'create_game':
+            if(isset($_SESSION['net_game']))
+            {
+                NetworkManager::removeGame($_SESSION['net_game']);
+                unset($_SESSION['net_game']);
+                unset($_SESSION['player_role']);
+                unset($_SESSION['game']);
+                unset($_SESSION['game_mode']);                
+            }
             $gameID = uniqid();
             $playerID = session_id();
             NetworkManager::createGame($gameID, $playerID);
@@ -23,16 +33,30 @@ if (isset($_POST['action']))
             {
                 $gameID = $_POST['game_id'];
                 $playerID = session_id();
-                if(NetworkManager::joinGame($gameID, $playerID))
+                
+                $game = NetworkManager::getGame($gameID);
+
+                if ($game && $game['player2'] === null)
                 {
-                    $_SESSION['net_game'] = $gameID;
-                    $_SESSION['player_role'] = 'player2';
-                    header('Location:GameSeaBattle.php?mode=network');
-                    exit;
+                    if(isset($_SESSION['net_game']))
+                    {
+                        NetworkManager::removeGame($_SESSION['net_game']);
+                        unset($_SESSION['net_game']);
+                        unset($_SESSION['player_role']);
+                    }
+                    if(NetworkManager::joinGame($gameID, $playerID))
+                    {
+                        $_SESSION['net_game'] = $gameID;
+                        $_SESSION['player_role'] = 'player2';
+                        header('Location:GameSeaBattle.php?mode=network');
+                        exit;
+                    }
                 }
             }
             break;
         case 'del_game':
+            if (isset($_SESSION['game']))
+                unset($_SESSION['game']);
             if (isset($_SESSION['net_game']))
             {
                 $gameID = $_SESSION['net_game'];
@@ -40,11 +64,25 @@ if (isset($_POST['action']))
                 NetworkManager::removeGame($gameID);
                 unset($_SESSION['net_game']);
                 unset($_SESSION['player_role']);
+                $key = 'game_'.$gameID;
+                if (isset($_SESSION[$key])) unset($key);
                 header('Location:NetSeaBattle.php');
                 exit;
             }
             break;
         case 'main_menu':
+            if (isset($_SESSION['game']))
+                unset($_SESSION['game']);
+            if (isset($_SESSION['net_game']))
+            {
+                $gameID = $_SESSION['net_game'];
+                $playerID = session_id();
+                NetworkManager::removeGame($gameID);
+                unset($_SESSION['net_game']);
+                unset($_SESSION['player_role']);
+                $key = 'game_'.$gameID;
+                if (isset($_SESSION[$key])) unset($key);
+            }
             header('Location:StartSeaBattle.php');
             exit;
     }

@@ -22,7 +22,11 @@ class NetworkManager
             'player1' => $parentID,
             'player2' => null,
             'state' => 'waiting',
-            'create_time' => time()
+            'create_time' => time(),
+            'ready_player1' => false,
+            'ready_player2' => false,
+            'board_player1' => null,
+            'board_player2' => null
         ];
 
         self::saveGames($games);
@@ -85,7 +89,13 @@ class NetworkManager
             unset($games[$gameID]);
             self::saveGames($games);
         }
-    }
+        
+        $sessionFiles = glob($gameID . '_*.json');
+        foreach ($sessionFiles as $file) 
+        {
+            @unlink($file);
+        }
+    }    
     
     public static function updateGame($gameID, $gameData)
     {
@@ -95,6 +105,86 @@ class NetworkManager
             $games[$gameID] = array_merge($games[$gameID], $gameData);
             self::saveGames($games);
         }
+    }
+
+    public static function setCurrentPlayer($gameID, $player)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            $games[$gameID]['current_player'] = $player;
+            $games[$gameID]['update_time'] = time();
+            self::saveGames($games);
+            return true;
+        }
+        return false;
+    }
+
+    public static function getCurrentPlayer($gameID)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            return $games[$gameID]['current_player'] ?? 'player1';
+        }
+        return null;
+    }
+
+    public static function getGameBoard($gameID, $playerNumber)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            return $games[$gameID]['board_'.$playerNumber] ?? null;
+        }
+        return null;
+    }
+
+    public static function updateGameBoard($gameID, $playerNumber, $board)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            $games[$gameID]['board_'.$playerNumber] = $board;
+            $games[$gameID]['update_time'] = time();
+            self::saveGames($games);
+            return true;
+        }
+        return false;
+    }
+
+    public static function setPlayerReady($gameID, $playerNumber, $ready = true)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            $games[$gameID]['ready_'.$playerNumber] = $ready;
+            self::saveGames($games);
+            return true;
+        }
+        return false;
+    }
+    
+    public static function getPlayerReady($gameID, $playerNumber)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            return $games[$gameID]['ready_'.$playerNumber] ?? false;
+        }
+        return false;
+    }
+
+    public static function isBothReady($gameID)
+    {
+        $games = self::getGames();
+        if (isset($games[$gameID])) 
+        {
+            $player1 = self::getPlayerReady($gameID, 'player1');
+            $player2 = self::getPlayerReady($gameID, 'player2');
+            return $player1 && $player2;
+        }
+        return false;
     }
 }
 ?>

@@ -27,8 +27,12 @@ if (!isset($_SESSION['game']) || (isset($_SESSION['game_mode']) && $_SESSION['ga
             
             $gameId = $_SESSION['net_game'];
             $playerRole = $_SESSION['player_role'];
-            $_SESSION['game'] = new SeaBattle($gameId, $playerRole);
-            $_SESSION['game_mode'] = 'network';
+
+            if (!isset($_SESSION['game'])) 
+            {
+                $_SESSION['game'] = new SeaBattle($gameId, $playerRole);
+                $_SESSION['game_mode'] = 'network';
+            }
             break;
             
         default:
@@ -36,11 +40,18 @@ if (!isset($_SESSION['game']) || (isset($_SESSION['game_mode']) && $_SESSION['ga
             $_SESSION['game_mode'] = 'single';
             break;
     }
-}
+}   
 
 $game = $_SESSION['game'];
 $gameMode = $_SESSION['game_mode'];
 $message = 'Расстановка кораблей';
+
+$syncGame = $game->syncGameState();
+if ($syncGame !== [])
+{
+    $message = $syncGame['message'];
+}
+
 
 if(isset($_POST['action']))
 {
@@ -61,7 +72,17 @@ if(isset($_POST['action']))
                       if ($game->Start())
                         $message = 'Начало игры. Стреляй!';
                       else
-                        $message = 'Корабль размещен!';
+                      {
+                        if ($gameMode === 'network')    
+                        {
+                            if ($game->isPlayerReady())
+                                $message = 'Ждем соперника...';
+                            else
+                                $message = 'Корабль размещен!';
+                        }
+                        else
+                            $message = 'Корабль размещен!';
+                      }
                     } 
                     else 
                     {
@@ -75,45 +96,54 @@ if(isset($_POST['action']))
             }
             break;
         case 'qiuck_place_ship':
-            $game->quickPlaceShip();            
-            $message = 'Начало игры. Стреляй!';
+            $game->quickPlaceShip();        
+            if ($game->Start())
+            {
+                $res = $game->syncGameState();
+                $message = $res['message'];
+            }
+            else
+                $message = 'Ждем соперника...';
             break;
         case 'shiftOrientation':
             $game->shiftOrientation();
             break;
         case 'shoot':
-            if (isset($_POST['coord']))
+            if ($gameMode !== 'network')
             {
-                $in_coord = mb_strtoupper($_POST['coord']);    
-                if (preg_match('/^([АБВГДЕЖЗИК])([1-9]|10)$/iu', $in_coord, $coord))
-                {    
-                    $row = $coord[2] - 1;
-                    $col = $game->getColByName($coord[1]);
-                    $res = $game->playerShoot($row, $col);
-                    if ($res['game_over'])
-                    {
-                        $message = 'Поздравляем! Вы победили!!!';
-                    }
-                    else
-                    {
-                        $message = $res['result'];
-                        if (!$res['hit'])
-                        {
-                            $res = $game->computerShoot();
-                            if ($res['game_over'])
-                            {
-                                $message = 'Эх, Вы проиграли :`(';
-                            }
-                            else
-                            {
-                                $message = 'Компьютер -> '.$res['result'];
-                            }
-                        }    
-                    }
-                }
-                else 
+                if (isset($_POST['coord']))
                 {
-                    $message = 'Неверный формат координат!';
+                    $in_coord = mb_strtoupper($_POST['coord']);    
+                    if (preg_match('/^([АБВГДЕЖЗИК])([1-9]|10)$/iu', $in_coord, $coord))
+                    {    
+                        $row = $coord[2] - 1;
+                        $col = $game->getColByName($coord[1]);
+                        $res = $game->playerShoot($row, $col);
+                        if ($res['game_over'])
+                        {
+                            $message = 'Поздравляем! Вы победили!!!';
+                        }
+                        else
+                        {
+                            $message = $res['result'];
+                            if (!$res['hit'])
+                            {
+                                $res = $game->computerShoot();
+                                if ($res['game_over'])
+                                {
+                                    $message = 'Эх, Вы проиграли :`(';
+                                }
+                                else
+                                {
+                                    $message = 'Компьютер -> '.$res['result'];
+                                }
+                            }    
+                        }
+                    }
+                    else 
+                    {
+                        $message = 'Неверный формат координат!';
+                    }
                 }
             }
             break;
@@ -130,14 +160,34 @@ if(isset($_POST['action']))
                         $player = $game->getPlayer();
                         $res = $game->networkShoot($row, $col, $player);
                         //--- разборчик ---- 
-                    }    
+                        if ($res['game_over'])
+                        {
+                            $message = ($playerRole === 'player1') ? 'Поздравляем! Вы победили!!!' : 'Упс, Вы проиграли. :(';
+                        }
+                        else
+                        {
+                            $message = $res['result'];
+                            if (!$res['hit'])
+                            {
+                                $message = 'Ход соперникка...';
+                            }    
+                        }
+                    }
+                    else 
+                    {
+                        $message = 'Неверный формат координат!';
+                    }
                 }
+            }
             break;
         case 'restart':
             session_destroy();
             header('Location: ' . $_SERVER['PHP_SELF']);            
             break;
     }
+
+    if ($gameMode === 'network')    
+        $allReady = $game->Start(); // ЗАМЕНИТЬ !!!
     $_SESSION['game'] = $game;
 }
 ?>
@@ -180,25 +230,28 @@ if(isset($_POST['action']))
     </div>      
     <div class="control">
         <?php if(!$game->Start()): ?>
-            <form method="POST">
-                <div>Осталось разместить: <?php echo $game->getUnPlaceCount() ?> кораблей</div>
-                <?php $ship = $game->getCurPlaceShip() ?>
-                <div>Текущий корабль: <?php echo $ship->getName() ?> (размер: <?php echo $ship->getSize() ?>, <?php echo $game->getCurOrientation() ?>)</div>
-                <div>
-                    <label>Введите координату (А1-К10, можно с маленькими буквами): </label>
-                    <input type="text" name="coord" required  style="width: 50px;">
-                    <button type="submit" name="action" value='place_ship'>Разместить</button>
-                </div>
-            </form>    
-            <form method="POST">
-                <div>
-                    <button type="submit" name="action" value='shiftOrientation'>Повернуть</button>
-                <div>
-                <br>
-                <div>
-                    <button type="submit" name="action" value='qiuck_place_ship'>Быстрая расстановка</button>                
-                <div>
-            </form>    
+            <!-- если осталось больше 0 -->
+            <?php if($game->getUnPlaceCount() > 0): ?>
+                <form method="POST">
+                    <div>Осталось разместить: <?php echo $game->getUnPlaceCount() ?> кораблей</div>
+                    <?php $ship = $game->getCurPlaceShip() ?>
+                    <div>Текущий корабль: <?php echo $ship->getName() ?> (размер: <?php echo $ship->getSize() ?>, <?php echo $game->getCurOrientation() ?>)</div>
+                    <div>
+                        <label>Введите координату (А1-К10, можно с маленькими буквами): </label>
+                        <input type="text" name="coord" required  style="width: 50px;">
+                        <button type="submit" name="action" value='place_ship'>Разместить</button>
+                    </div>
+                </form>    
+                <form method="POST">
+                    <div>
+                        <button type="submit" name="action" value='shiftOrientation'>Повернуть</button>
+                    <div>
+                    <br>
+                    <div>
+                        <button type="submit" name="action" value='qiuck_place_ship'>Быстрая расстановка</button>                
+                    <div>
+                </form>    
+            <?php endif ?>
         <?php elseif (!$game->isGameOver()) : ?>    
             <form method="POST">
                 <div>
@@ -298,6 +351,13 @@ echo htmlspecialchars(implode(PHP_EOL, $game->log->getLogText()));
             updateShootState();
             coorInput.focus();
         }
+
+        <?php if ($gameMode === 'network' && $allReady): ?>
+        setTimeout(function() {
+            location.reload();
+        }, 5000);
+        <?php endif ?>
+
     });        
     </script>
 
