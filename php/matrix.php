@@ -166,6 +166,16 @@ class Matrix {
         $html .= '</table>';
         return $html;
     }
+	
+	public function isShowColsLabel()
+	{
+		return $this->showColsLabel;
+	}
+
+	public function isShowRowsLabel()
+	{
+		return $this->showRowsLabel;
+	}	
 
 }
 

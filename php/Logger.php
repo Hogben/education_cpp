@@ -7,14 +7,16 @@ class Logger
     private $fileSize;
     private $fileCount;
     private $sessionId;
+    private $debug;
 
-    public function __construct($logName, $logDir = 'log', $fileSize = 1048576, $fileCount = 5)
+    public function __construct($logName, $logDir = 'log', $debug = false, $fileSize = 1048576, $fileCount = 5)
     {
         $this->logName = $logName;
         $this->logDir = $logDir;
         $this->fileSize = $fileSize;
         $this->fileCount = $fileCount;
         $this->sessionId = session_id() ? session_id() : 'no_session';
+        $this->debug = $debug
 
         if (!is_dir($this->logDir))
         {
@@ -39,7 +41,7 @@ class Logger
 
     public function debug($msg)
     {
-        $this->log($msg, 'DEBUG');
+        if ($this->debug)   $this->log($msg, 'DEBUG');
     }
 
     public function error($msg)

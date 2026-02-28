@@ -164,7 +164,7 @@ class NetworkManager
         }
         return false;
     }
-    
+
     public static function getPlayerReady($gameID, $playerNumber)
     {
         $games = self::getGames();
@@ -175,16 +175,47 @@ class NetworkManager
         return false;
     }
 
-    public static function isBothReady($gameID)
-    {
-        $games = self::getGames();
-        if (isset($games[$gameID])) 
-        {
-            $player1 = self::getPlayerReady($gameID, 'player1');
-            $player2 = self::getPlayerReady($gameID, 'player2');
-            return $player1 && $player2;
-        }
-        return false;
-    }
+	public static function getOpponentReady($gameID, $playerNumber)
+	{
+		$games = self::getGames();
+		if (isset($games[$gameID])) 
+		{
+			$opponent = ($playerNumber === 'player1') ? 'player2' : 'player1';
+			return $games[$gameID]['ready_' . $opponent] ?? false;
+		}
+		return false;
+	}	
+
+	public static function isBothReady($gameID)
+	{
+		$games = self::getGames();
+		if (isset($games[$gameID])) {
+			$player1 = self::getPlayerReady($gameID, 'player1');
+			$player2 = self::getPlayerReady($gameID, 'player2');
+			$bothReady = $player1 && $player2;
+
+			if ($bothReady) {
+				// Если оба готовы, но нет текущего игрока - устанавливаем player1
+				if (!isset($games[$gameID]['current_player']) || $games[$gameID]['current_player'] === null) {
+					$games[$gameID]['current_player'] = 'player1';
+					self::saveGames($games);
+				}
+				return true;
+			}
+			return false;
+		}
+		return false;
+	}
+	
+	public static function forceSync($gameID)
+	{
+		$games = self::getGames();
+		if (isset($games[$gameID])) {
+			$games[$gameID]['last_sync'] = time();
+			self::saveGames($games);
+			return true;
+		}
+		return false;
+	}	
 }
 ?>
